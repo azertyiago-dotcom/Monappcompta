@@ -16,15 +16,20 @@
         .btn-dark { background: #1e293b; color: white; }
         .btn-gray { background: #e2e8f0; color: #1e293b; }
         .btn-danger { background: #fee2e2; color: #991b1b; }
+        .btn-green { background: #16a34a; color: white; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; gap: 8px; }
         .item-row small { color: #64748b; }
-        .btn-mini { width: auto; padding: 4px 8px; font-size: 11px; margin: 0; border-radius: 4px; }
+        .btn-mini { width: auto; padding: 4px 8px; font-size: 11px; margin: 0 0 0 4px; border-radius: 4px; }
         .hidden { display: none !important; }
         .nav-tabs { display: flex; gap: 5px; background: #e2e8f0; padding: 3px; border-radius: 6px; margin-bottom: 10px; }
         .tab { flex: 1; text-align: center; padding: 6px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
         .tab.active { background: #2563eb; color: white; }
         .empty { text-align: center; color: #94a3b8; font-size: 12px; padding: 10px; font-style: italic; }
+        .totals { margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 8px; font-size: 13px; }
+        .totals > div { display: flex; justify-content: space-between; padding: 2px 0; }
+        .totals .ttc { font-weight: bold; font-size: 15px; color: #166534; border-top: 1px solid #cbd5e1; padding-top: 6px; margin-top: 4px; }
     </style>
 </head>
 <body>
@@ -59,13 +64,17 @@
         <input type="text" id="inp-name-libre" placeholder="Ex: Café ou Prestation">
     </div>
 
-    <div class="grid">
+    <div class="grid3">
         <div>
             <label>Prix TTC (€)</label>
             <input type="number" id="inp-price" step="0.01" placeholder="0.00">
         </div>
         <div>
-            <label>Quantité</label>
+            <label>TVA (%)</label>
+            <input type="number" id="inp-tva" step="0.1" value="20" min="0" max="100">
+        </div>
+        <div>
+            <label>Qté</label>
             <input type="number" id="inp-qty" value="1" min="1">
         </div>
     </div>
@@ -75,9 +84,10 @@
     <div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
         <label>Panier Actuel :</label>
         <div id="liste-panier"></div>
-        <div style="display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px;">
-            <span>TOTAL :</span>
-            <span id="txt-total-panier">0.00 €</span>
+        <div class="totals">
+            <div><span>Total HT</span><span id="tot-ht">0.00 €</span></div>
+            <div><span>Total TVA</span><span id="tot-tva">0.00 €</span></div>
+            <div class="ttc"><span>TOTAL TTC</span><span id="tot-ttc">0.00 €</span></div>
         </div>
     </div>
 
@@ -95,10 +105,14 @@
     <h2>📦 Ajouter au Stock</h2>
     <label>Nom du produit</label>
     <input type="text" id="stk-name" placeholder="Ex: T-shirt XL">
-    <div class="grid">
+    <div class="grid3">
         <div>
             <label>Prix Vente TTC (€)</label>
             <input type="number" id="stk-price" step="0.01" placeholder="0.00">
+        </div>
+        <div>
+            <label>TVA (%)</label>
+            <input type="number" id="stk-tva" step="0.1" value="20" min="0" max="100">
         </div>
         <div>
             <label>Quantité</label>
@@ -114,16 +128,16 @@
 <div class="box">
     <h2>📜 Factures Clôturées</h2>
     <div id="liste-historique"></div>
-    <button class="btn-danger" onclick="clearAll()" style="margin-top: 20px; font-size: 11px; padding: 6px;">⚠️ Tout Réinitialiser</button>
+    <button class="btn-danger" onclick="resetAll()" style="margin-top: 20px; font-size: 11px; padding: 6px;">⚠️ Tout Réinitialiser</button>
 </div>
 
 <script>
-    let stocks = [];
-    let ventes = [];
+    // ---------- État ----------
+    let stocks = [], ventes = [], panier = [];
     let profil = { name: "", siret: "" };
-    let panier = [];
     let isLibre = false;
 
+    // ---------- Persistance ----------
     function loadAll() {
         try { stocks = JSON.parse(localStorage.getItem('stk_data')) || []; } catch(e) { stocks = []; }
         try { ventes = JSON.parse(localStorage.getItem('vnt_data')) || []; } catch(e) { ventes = []; }
@@ -137,11 +151,23 @@
         try { localStorage.setItem('prf_data', JSON.stringify(profil)); } catch(e){}
     }
 
+    // ---------- Format ----------
     function fmt(n) { return Number(n).toFixed(2) + ' €'; }
     function esc(s) {
         return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
 
+    // ---------- Confirmation fiable (Android natif si dispo) ----------
+    function askConfirm(title, msg, ok, cancel, callback) {
+        window.__confirmCb = callback;
+        if (window.AndroidBridge && AndroidBridge.confirm) {
+            AndroidBridge.confirm(title, msg, ok, cancel, "__confirmCb");
+        } else {
+            callback(window.confirm(title + "\n\n" + msg));
+        }
+    }
+
+    // ---------- Mode ----------
     function setMode(mode) {
         isLibre = mode;
         document.getElementById('t-stock').className = mode ? "tab" : "tab active";
@@ -156,33 +182,41 @@
         if (isLibre) return;
         const id = document.getElementById('sel-product').value;
         const item = stocks.find(p => p.id === id);
-        document.getElementById('inp-price').value = item ? item.price : "";
+        if (item) {
+            document.getElementById('inp-price').value = item.price;
+            document.getElementById('inp-tva').value = item.tva;
+        }
     }
 
+    // ---------- Stock ----------
     function createStock() {
         const name = document.getElementById('stk-name').value.trim();
         const price = parseFloat(document.getElementById('stk-price').value);
+        const tva = parseFloat(document.getElementById('stk-tva').value);
         const qty = parseInt(document.getElementById('stk-qty').value);
 
-        if (!name || isNaN(price) || isNaN(qty) || price < 0 || qty < 0) {
+        if (!name || isNaN(price) || isNaN(qty) || isNaN(tva) || price < 0 || qty < 0 || tva < 0) {
             alert("Erreur : Veuillez remplir toutes les cases correctement.");
             return;
         }
 
-        stocks.push({ id: "ID-" + Date.now(), name, price, qty });
+        stocks.push({ id: "ID-" + Date.now(), name, price, tva, qty });
         document.getElementById('stk-name').value = "";
         document.getElementById('stk-price').value = "";
+        document.getElementById('stk-tva').value = "20";
         document.getElementById('stk-qty').value = "";
         saveStocks();
         render();
     }
 
+    // ---------- Panier ----------
     function addPanier() {
         const qty = parseInt(document.getElementById('inp-qty').value);
         const price = parseFloat(document.getElementById('inp-price').value);
+        const tva = parseFloat(document.getElementById('inp-tva').value);
 
-        if (isNaN(price) || isNaN(qty) || qty < 1 || price < 0) {
-            alert("Indiquez un prix et une quantité valides.");
+        if (isNaN(price) || isNaN(qty) || isNaN(tva) || qty < 1 || price < 0 || tva < 0) {
+            alert("Indiquez un prix, une TVA et une quantité valides.");
             return;
         }
 
@@ -200,7 +234,7 @@
             pId = stocks[idx].id;
         }
 
-        panier.push({ pId, name, qty, price, total: price * qty });
+        panier.push({ pId, name, qty, price, tva, total: price * qty });
         document.getElementById('inp-name-libre').value = "";
         document.getElementById('inp-price').value = "";
         document.getElementById('inp-qty').value = "1";
@@ -212,6 +246,20 @@
         render();
     }
 
+    // ---------- Totaux ----------
+    function computeTotaux(list) {
+        let ht = 0, tva = 0, ttc = 0;
+        list.forEach(i => {
+            const ttcLigne = i.price * i.qty;
+            const htLigne = ttcLigne / (1 + (i.tva / 100));
+            ttc += ttcLigne;
+            ht  += htLigne;
+            tva += (ttcLigne - htLigne);
+        });
+        return { ht, tva, ttc };
+    }
+
+    // ---------- Encaissement ----------
     function encaisser() {
         if (panier.length === 0) { alert("Votre panier est vide."); return; }
 
@@ -224,14 +272,18 @@
             }
         });
 
-        const totalFacture = panier.reduce((s, i) => s + i.total, 0);
+        const t = computeTotaux(panier);
         const fRef = "F-" + Date.now().toString().slice(-6);
         const nouvelleVente = {
             id: fRef,
             date: new Date().toLocaleString('fr-FR'),
-            total: totalFacture,
+            dateTs: Date.now(),
+            ht: t.ht,
+            tva: t.tva,
+            total: t.ttc,
             payment: payMode,
-            items: panier.map(i => ({ name: i.name, qty: i.qty, price: i.price }))
+            profil: { name: profil.name, siret: profil.siret },
+            items: panier.map(i => ({ name: i.name, qty: i.qty, price: i.price, tva: i.tva }))
         };
 
         ventes.push(nouvelleVente);
@@ -239,33 +291,112 @@
         saveStocks();
         saveVentes();
         render();
-        alert("Facture " + fRef + " clôturée.\nTotal : " + fmt(totalFacture));
+        alert("Facture " + fRef + " clôturée.\nTTC : " + fmt(t.ttc));
     }
 
-    function clearAll() {
-        if (!confirm("⚠️ Supprimer TOUTES les données (stock, ventes, profil) ?\nAction irréversible.")) return;
-        if (!confirm("Vraiment sûr ? Faites une sauvegarde avant.")) return;
-        stocks = []; ventes = []; panier = []; profil = { name: "", siret: "" };
-        try {
-            localStorage.removeItem('stk_data');
-            localStorage.removeItem('vnt_data');
-            localStorage.removeItem('prf_data');
-        } catch(e){}
-        document.getElementById('ent-name').value = "";
-        document.getElementById('ent-siret').value = "";
-        render();
+    // ---------- Reset ----------
+    function resetAll() {
+        askConfirm("Réinitialiser ?",
+            "Supprimer TOUTES les données (stock, ventes, profil) ?\nAction irréversible.",
+            "Oui, supprimer", "Annuler", (ok) => {
+                if (!ok) return;
+                askConfirm("Confirmation finale",
+                    "Vraiment sûr ? Faites une sauvegarde avant.",
+                    "Confirmer", "Annuler", (ok2) => {
+                        if (!ok2) return;
+                        stocks = []; ventes = []; panier = []; profil = { name: "", siret: "" };
+                        try {
+                            localStorage.removeItem('stk_data');
+                            localStorage.removeItem('vnt_data');
+                            localStorage.removeItem('prf_data');
+                        } catch(e){}
+                        document.getElementById('ent-name').value = "";
+                        document.getElementById('ent-siret').value = "";
+                        render();
+                        if (window.AndroidBridge && AndroidBridge.toast) AndroidBridge.toast("Données effacées");
+                    });
+            });
     }
 
+    // ---------- Export PDF ----------
+    function buildFactureHtml(v) {
+        const rows = v.items.map(i => {
+            const ttc = i.price * i.qty;
+            const ht = ttc / (1 + i.tva / 100);
+            return `<tr>
+                <td>${esc(i.name)}</td>
+                <td style="text-align:center">${i.qty}</td>
+                <td style="text-align:right">${fmt(i.price)}</td>
+                <td style="text-align:center">${i.tva}%</td>
+                <td style="text-align:right">${fmt(ht)}</td>
+                <td style="text-align:right">${fmt(ttc)}</td>
+            </tr>`;
+        }).join('');
+
+        return `<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <style>
+            body{font-family:sans-serif;padding:20px;font-size:12px;color:#1e293b}
+            h1{font-size:20px;margin-bottom:4px}
+            .hdr{display:flex;justify-content:space-between;border-bottom:2px solid #2563eb;padding-bottom:10px;margin-bottom:15px}
+            .hdr .right{text-align:right}
+            table{width:100%;border-collapse:collapse;margin-top:10px}
+            th{background:#f1f5f9;padding:6px;text-align:left;font-size:11px;border-bottom:1px solid #cbd5e1}
+            td{padding:6px;border-bottom:1px solid #e2e8f0}
+            .tot{margin-top:15px;text-align:right;font-size:13px}
+            .tot div{padding:3px 0}
+            .tot .ttc{font-weight:bold;font-size:15px;color:#166534;border-top:1px solid #cbd5e1;padding-top:6px}
+            .footer{margin-top:30px;font-size:10px;color:#94a3b8;text-align:center}
+        </style></head><body>
+        <div class="hdr">
+            <div><h1>${esc(v.profil.name || "Mon Établissement")}</h1>
+                <div>SIRET : ${esc(v.profil.siret || "—")}</div></div>
+            <div class="right"><h1>Facture ${esc(v.id)}</h1>
+                <div>${esc(v.date)}</div>
+                <div>Paiement : ${esc(v.payment)}</div></div>
+        </div>
+        <table>
+            <thead><tr>
+                <th>Désignation</th><th style="text-align:center">Qté</th>
+                <th style="text-align:right">P.U. TTC</th><th style="text-align:center">TVA</th>
+                <th style="text-align:right">HT</th><th style="text-align:right">TTC</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+        </table>
+        <div class="tot">
+            <div>Total HT : ${fmt(v.ht)}</div>
+            <div>Total TVA : ${fmt(v.tva)}</div>
+            <div class="ttc">TOTAL TTC : ${fmt(v.total)}</div>
+        </div>
+        <div class="footer">Facture générée par Ma Compta</div>
+        </body></html>`;
+    }
+
+    function exportPdf(id, share) {
+        const v = ventes.find(x => x.id === id);
+        if (!v) { alert("Facture introuvable"); return; }
+        if (!window.AndroidBridge || !AndroidBridge.exportPdfAndShare) {
+            alert("Export PDF disponible uniquement dans l'application Android.");
+            return;
+        }
+        const html = buildFactureHtml(v);
+        const fname = "Facture_" + v.id + ".pdf";
+        if (share) AndroidBridge.exportPdfAndShare(html, fname);
+        else AndroidBridge.exportPdfOnly(html, fname);
+    }
+
+    // ---------- Rendu ----------
     function render() {
         document.getElementById('ent-name').value = profil.name || "";
         document.getElementById('ent-siret').value = profil.siret || "";
 
+        // CA du jour
         const today = new Date().toLocaleDateString('fr-FR');
         const ca = ventes
             .filter(v => v.date && v.date.startsWith(today))
             .reduce((s, v) => s + v.total, 0);
         document.getElementById('txt-ca').textContent = fmt(ca);
 
+        // Sélecteur produits
         const sel = document.getElementById('sel-product');
         if (stocks.length === 0) {
             sel.innerHTML = '<option value="">— Aucun article en stock —</option>';
@@ -275,44 +406,56 @@
             ).join('');
         }
 
+        // Panier
         const lp = document.getElementById('liste-panier');
         if (panier.length === 0) {
             lp.innerHTML = '<div class="empty">Panier vide</div>';
         } else {
             lp.innerHTML = panier.map((i, idx) => `
                 <div class="item-row">
-                    <span>${esc(i.name)} <small>x${i.qty}</small></span>
+                    <span>${esc(i.name)} <small>x${i.qty} — TVA ${i.tva}%</small></span>
                     <span>${fmt(i.total)}
                         <button class="btn-danger btn-mini" onclick="removePanier(${idx})">✕</button>
                     </span>
                 </div>`).join('');
         }
-        document.getElementById('txt-total-panier').textContent =
-            fmt(panier.reduce((s, i) => s + i.total, 0));
+        const tp = computeTotaux(panier);
+        document.getElementById('tot-ht').textContent  = fmt(tp.ht);
+        document.getElementById('tot-tva').textContent = fmt(tp.tva);
+        document.getElementById('tot-ttc').textContent = fmt(tp.ttc);
 
+        // Stock
         const ls = document.getElementById('liste-stock');
         if (stocks.length === 0) {
             ls.innerHTML = '<div class="empty">Aucun article</div>';
         } else {
             ls.innerHTML = stocks.map(p => `
                 <div class="item-row">
-                    <span>${esc(p.name)} <small>— ${fmt(p.price)}</small></span>
+                    <span>${esc(p.name)} <small>— ${fmt(p.price)} — TVA ${p.tva}%</small></span>
                     <span>Stock : <strong>${p.qty}</strong></span>
                 </div>`).join('');
         }
 
+        // Historique avec boutons PDF / partage
         const lh = document.getElementById('liste-historique');
         if (ventes.length === 0) {
             lh.innerHTML = '<div class="empty">Aucune facture</div>';
         } else {
             lh.innerHTML = ventes.slice().reverse().map(v => `
                 <div class="item-row">
-                    <span><strong>${esc(v.id)}</strong><br><small>${esc(v.date)} — ${esc(v.payment)}</small></span>
-                    <span>${fmt(v.total)}</span>
+                    <span><strong>${esc(v.id)}</strong><br>
+                        <small>${esc(v.date)} — ${esc(v.payment)}<br>
+                        HT ${fmt(v.ht)} / TVA ${fmt(v.tva)}</small></span>
+                    <span style="text-align:right">
+                        <strong>${fmt(v.total)}</strong><br>
+                        <button class="btn-dark btn-mini" onclick="exportPdf('${esc(v.id)}', false)">📄 PDF</button>
+                        <button class="btn-green btn-mini" onclick="exportPdf('${esc(v.id)}', true)">📤</button>
+                    </span>
                 </div>`).join('');
         }
     }
 
+    // ---------- Boot ----------
     loadAll();
     render();
 </script>
