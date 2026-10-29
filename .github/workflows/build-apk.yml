@@ -1,4 +1,3 @@
-
 name: Générateur Automatique APK
 
 on:
@@ -15,38 +14,83 @@ jobs:
     - name: 1. Récupération du code
       uses: actions/checkout@v4
 
-    - name: 2. Installation de Java (Requis pour Android)
+    - name: 2. Configuration de Java et Gradle
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
         java-version: '17'
 
-    - name: 3. Installation de Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-
-    - name: 4. Installation des outils Capacitor
-      run: npm install
-
-    - name: 5. Préparation du dossier Web obligatoires
+    - name: 3. Génération de l'architecture Native Android
       run: |
-        mkdir www
-        cp index.html www/
+        mkdir -p app/src/main/assets
+        mkdir -p app/src/main/res/values
+        cp index.html app/src/main/assets/index.html
+        
+        # Création des textes
+        echo '<resources><string name="app_name">Ma Compta</string></resources>' > app/src/main/res/values/strings.xml
+        
+        # Création du manifeste de sécurité avec accès aux requêtes SumUp
+        cat << 'EOF' > app/src/main/AndroidManifest.xml
+        <manifest xmlns:android="http://android.com">
+            <uses-permission android:name="android.permission.INTERNET" />
+            <queries>
+                <package android:name="com.sumup.merchant" />
+            </queries>
+            <application
+                android:label="@string/app_name"
+                android:allowBackup="true"
+                android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+                <activity android:name="com.monentreprise.macompta.MainActivity"
+                    android:exported="true">
+                    <intent-filter>
+                        <action android:name="android.intent.action.MAIN" />
+                        <category android:name="android.intent.category.LAUNCHER" />
+                    </intent-filter>
+                </activity>
+            </application>
+        </manifest>
+        EOF
 
-    - name: 6. Création du dossier Android
-      run: npx cap add android
+        # Création du code natif pour forcer l'autorisation de stockage et JavaScript
+        mkdir -p app/src/main/java/com/monentreprise/macompta
+        cat << 'EOF' > app/src/main/java/com/monentreprise/macompta/MainActivity.java
+        package com.monentreprise.macompta;
+        import android.app.Activity;
+        import android.os.Bundle;
+        import android.webkit.WebSettings;
+        import android.webkit.WebView;
+        import android.webkit.WebViewClient;
 
-    - name: 7. Synchronisation des fichiers
-      run: npx cap sync
+        public class MainActivity extends Activity {
+            @Override
+            protected void onCreate(Bundle savedInstanceState) {
+                super.onCreate(savedInstanceState);
+                WebView webView = new WebView(this);
+                WebSettings settings = webView.getSettings();
+                settings.setJavaScriptEnabled(true);
+                settings.setDomStorageEnabled(true);
+                settings.setDatabaseEnabled(true);
+                settings.setAllowFileAccess(true);
+                
+                webView.setWebViewClient(new WebViewClient());
+                webView.loadUrl("file:///android_asset/index.html");
+                setContentView(webView);
+            }
+        }
+        EOF
 
-    - name: 8. Compilation du fichier APK final
-      run: |
-        cd android
-        ./gradlew assembleDebug
+        # Configuration des fichiers de construction Gradle
+        cp build.gradle app/build.gradle
+        echo "include ':app'" > settings.gradle
 
-    - name: 9. Mise à disposition de l'APK
+    - name: 4. Configuration de Gradle Wrapper
+      run: gradle wrapper --gradle-version 8.2
+
+    - name: 5. Compilation de l'APK Natif
+      run: ./gradlew assembleDebug
+
+    - name: 6. Livraison de l'APK fonctionnel
       uses: actions/upload-artifact@v4
       with:
         name: Mon-Application-Compta-APK
-        path: android/app/build/outputs/apk/debug/app-debug.apk
+        path: app/build/outputs/apk/debug/app-debug.apk
