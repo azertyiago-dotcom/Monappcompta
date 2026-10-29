@@ -1,0 +1,22 @@
+plugins {
+    id 'com.android.application' version '8.2.2'
+}
+
+android {
+    namespace 'com.monentreprise.macompta'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.monentreprise.macompta"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+}
