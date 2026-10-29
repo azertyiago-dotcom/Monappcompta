@@ -18,8 +18,13 @@ android {
         applicationId "com.monentreprise.macompta"
         minSdk 23
         targetSdk 34
-        versionCode 3
-        versionName "1.2"
+        versionCode 2
+        versionName "1.1"
+    }
+
+    // ✅ Active la génération de BuildConfig (désactivée par défaut avec AGP 8+)
+    buildFeatures {
+        buildConfig true
     }
 
     buildTypes {
@@ -51,14 +56,8 @@ android {
     }
 }
 
-// Force la version de webkit pour éviter qu'une ancienne version soit utilisée
-configurations.all {
-    resolutionStrategy {
-        force 'androidx.webkit:webkit:1.14.0'
-    }
-}
-
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.webkit:webkit:1.14.0'
+    implementation 'androidx.webkit:webkit:1.11.0'
+    implementation 'androidx.activity:activity:1.9.3'
 }
