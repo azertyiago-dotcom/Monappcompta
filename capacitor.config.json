@@ -1,0 +1,6 @@
+{
+  "appId": "com.monentreprise.macompta",
+  "appName": "Ma Compta",
+  "webDir": ".",
+  "bundledWebRuntime": false
+}
