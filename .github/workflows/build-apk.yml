@@ -29,16 +29,17 @@ jobs:
       run: npm install
 
     - name: 5. Création du dossier Android
-      run: |
-        npx cap static
-        npx cap add android
+      run: npx cap add android
 
-    - name: 6. Compilation du fichier APK final
+    - name: 6. Synchronisation des fichiers
+      run: npx cap sync
+
+    - name: 7. Compilation du fichier APK final
       run: |
         cd android
         ./gradlew assembleDebug
 
-    - name: 7. Mise à disposition de l'APK
+    - name: 8. Mise à disposition de l'APK
       uses: actions/upload-artifact@v4
       with:
         name: Mon-Application-Compta-APK
