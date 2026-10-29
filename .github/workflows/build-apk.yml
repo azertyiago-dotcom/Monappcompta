@@ -62,7 +62,7 @@ jobs:
         import android.webkit.WebViewClient;
 
         public class MainActivity extends Activity {
-            @Override
+            @img_generation_api Override
             protected void onCreate(Bundle savedInstanceState) {
                 super.onCreate(savedInstanceState);
                 WebView webView = new WebView(this);
@@ -79,8 +79,8 @@ jobs:
         }
         EOF
 
-        # Nettoyage et verrouillage des dépendances de caisse
-        echo "include '.'" > settings.gradle
+        # Nettoyage de la configuration d'arborescence double
+        echo "" > settings.gradle
 
     - name: 4. Configuration officielle de Gradle
       uses: gradle/actions/setup-gradle@v4
