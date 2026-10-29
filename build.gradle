@@ -2,7 +2,6 @@ plugins {
     id 'com.android.application' version '8.5.2' apply false
 }
 
-// On applique le plugin au projet racine (structure "app unique" sans sous-module)
 apply plugin: 'com.android.application'
 
 android {
@@ -43,6 +42,11 @@ android {
 
     androidResources {
         noCompress 'html', 'js', 'css'
+    }
+
+    // 👇 LIGNE À AJOUTER ICI 👇
+    buildFeatures {
+        buildConfig = true
     }
 }
 
