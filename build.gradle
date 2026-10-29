@@ -1,6 +1,14 @@
-plugins {
-    id 'com.android.application' version '8.2.2'
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.2.2'
+    }
 }
+
+apply plugin: 'com.android.application'
 
 android {
     namespace 'com.monentreprise.macompta'
