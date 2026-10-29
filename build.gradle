@@ -1,24 +1,5 @@
-// ============================================================
-//  Repositories pour les PLUGINS Gradle (buildscript)
-// ============================================================
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.5.2'
-    }
-}
-
-// ============================================================
-//  Repositories pour les DÉPENDANCES de l'app (le bloc manquant)
-// ============================================================
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
+plugins {
+    id 'com.android.application' version '8.5.2' apply false
 }
 
 apply plugin: 'com.android.application'
