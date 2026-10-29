@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compta & Stock - SumUp</title>
+    <!-- Chargement de Tailwind CSS pour un design moderne et propre -->
+    <script src="https://jsdelivr.net"></script>
+    <!-- Librairie pour la génération de PDF -->
+    <script src="https://cloudflare.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans p-4 pb-12">
+
+    <div class="max-w-md mx-auto space-y-6">
+        <!-- TITRE -->
+        <header class="bg-blue-600 text-white p-4 rounded-xl shadow-md text-center">
+            <h1 class="text-xl font-bold">📊 Ma Compta & Stock</h1>
+            <p class="text-xs opacity-80" id="current-date"></p>
+        </header>
+
+        <!-- TABLEAU DE BORD DU JOUR -->
+        <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <h2 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wider">📈 Bilan du Jour</h2>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-green-50 p-3 rounded-lg border border-green-200">
+                    <p class="text-xs text-green-700 font-medium">Chiffre d'Affaires</p>
+                    <p class="text-xl font-bold text-green-600" id="stats-ca">0.00 €</p>
+                </div>
+                <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <p class="text-xs text-blue-700 font-medium">Bénéfice Net</p>
+                    <p class="text-xl font-bold text-blue-600" id="stats-benefice">0.00 €</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FORMULAIRE DE VENTE -->
+        <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-3">
+            <h2 class="font-semibold text-gray-700 text-sm uppercase tracking-wider">🛒 Enregistrer une Vente</h2>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Sélectionner un produit</label>
+                <select id="sale-product" class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-gray-50" onchange="updateSalePrice()">
+                    <option value="">-- Choisir un produit --</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Prix de vente (€)</label>
+                <input type="number" id="sale-price" step="0.01" class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-gray-50" placeholder="0.00">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Mode de règlement</label>
+                <select id="sale-payment" class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-gray-50">
+                    <option value="Espèces">💵 Espèces</option>
+                    <option value="Chèque">✍️ Chèque</option>
+                    <option value="Virement">🏦 Virement</option>
+                    <option value="Carte (SumUp)">💳 Carte Bancaire (SumUp)</option>
+                </select>
+            </div>
+            <button onclick="ajouterVente()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg shadow hover:bg-blue-700 active:scale-[0.98] transition text-sm">
+                Valider la Vente
+            </button>
+        </section>
+
+        <!-- AJOUT / GESTION DES STOCKS -->
+        <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-3">
+            <h2 class="font-semibold text-gray-700 text-sm uppercase tracking-wider">📦 Gestion des Stocks</h2>
+            <div class="grid grid-cols-2 gap-2">
+                <input type="text" id="stock-name" placeholder="Nom du produit" class="p-2 border border-gray-300 rounded-lg text-sm col-span-2">
+                <input type="number" id="stock-cost" step="0.01" placeholder="Prix d'achat (€)" class="p-2 border border-gray-300 rounded-lg text-sm">
+                <input type="number" id="stock-price" step="0.01" placeholder="Prix de vente (€)" class="p-2 border border-gray-300 rounded-lg text-sm">
+                <input type="number" id="stock-qty" placeholder="Quantité initiale" class="p-2 border border-gray-300 rounded-lg text-sm col-span-2">
+            </div>
+            <button onclick="ajouterStock()" class="w-full bg-gray-800 text-white font-semibold py-2 rounded-lg text-sm hover:bg-gray-900">
+                Ajouter au Catalogue / Stock
+            </button>
+            
+            <!-- Liste des stocks actuels -->
+            <div class="mt-2 max-h-36 overflow-y-auto border border-gray-100 rounded-lg p-2 bg-gray-50 text-xs space-y-1" id="stock-list">
+                <!-- Rempli par JavaScript -->
+            </div>
+        </section>
+
+        <!-- HISTORIQUE DES VENTES & ACTIONS D'EXPORT -->
+        <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-3">
+            <div class="flex justify-between items-center">
+                <h2 class="font-semibold text-gray-700 text-sm uppercase tracking-wider">📜 Historique Général</h2>
+                <button onclick="clearAllData()" class="text-xs text-red-500 hover:underline">Réinitialiser</button>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="exporterTXT()" class="bg-gray-200 text-gray-700 py-2 rounded-lg text-xs font-semibold hover:bg-gray-300">💾 Exporter en TXT</button>
+                <button onclick="exporterPDF()" class="bg-red-100 text-red-700 py-2 rounded-lg text-xs font-semibold hover:bg-red-200">📄 Exporter en PDF</button>
+            </div>
+
+            <div class="max-h-48 overflow-y-auto border border-gray-100 rounded-lg bg-gray-50" id="sales-history">
+                <!-- Rempli par JavaScript -->
+            </div>
+        </section>
+    </div>
+
+    <!-- LOGIQUE LOGICIELLE DE L'APPLICATION -->
+    <script>
+        // Chargement initial des données stockées dans la mémoire du téléphone
+        let stocks = JSON.parse(localStorage.getItem('compta_stocks')) || [];
+        let ventes = JSON.parse(localStorage.getItem('compta_ventes')) || [];
+
+        // Afficher la date du jour
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        function rafraichirInterface() {
+            localStorage.setItem('compta_stocks', JSON.stringify(stocks));
+            localStorage.setItem('compta_ventes', JSON.stringify(ventes));
+
+            // Mettre à jour le sélecteur de produits pour la vente
+            const saleProductSelect = document.getElementById('sale-product');
+            saleProductSelect.innerHTML = '<option value="">-- Choisir un produit --</option>';
+            stocks.forEach(p => {
+                saleProductSelect.innerHTML += `<option value="${p.id}">${p.name} (Dispo: ${p.qty})</option>`;
+            });
+
+            // Afficher le catalogue / stock
+            const stockListDiv = document.getElementById('stock-list');
+            if (stocks.length === 0) stockListDiv.innerHTML = '<p class="text-gray-400 italic">Aucun produit en stock.</p>';
+            else {
+                stockListDiv.innerHTML = '';
+                stocks.forEach(p => {
+                    stockListDiv.innerHTML += `<div class="flex justify-between border-b border-gray-200 py-1"><span><strong>${p.name}</strong> (x${p.qty})</span> <span class="text-gray-500">Achat: ${p.cost}€ | Vente: ${p.price}€</span></div>`;
+                });
+            }
+
+            // Calculer et afficher l'historique et le bilan du jour
+            const salesHistoryDiv = document.getElementById('sales-history');
+            salesHistoryDiv.innerHTML = '';
+            
+            let totalCA = 0;
+            let totalBenefice = 0;
+            const aujourdHui = new Date().toDateString();
+
+            ventes.slice().reverse().forEach(v => {
+                // Rendu visuel historique
+                salesHistoryDiv.innerHTML += `
+                    <div class="p-2 border-b border-gray-200 text-xs flex justify-between items-center">
+                        <div>
+                            <span class="font-semibold block">${v.productName}</span>
+                            <span class="text-gray-500">${v.dateString} - ${v.payment}</span>
+                        </div>
+                        <span class="font-bold text-gray-700">${v.price.toFixed(2)} €</span>
+                    </div>`;
+
+                // Statistiques globales du jour (Même date calendrier)
+                if (new Date(v.timestamp).toDateString() === aujourdHui) {
+                    totalCA += v.price;
+                    totalBenefice += (v.price - v.cost);
+                }
+            });
+
+            if (ventes.length === 0) salesHistoryDiv.innerHTML = '<p class="text-gray-400 italic p-3 text-xs text-center">Aucune vente enregistrée.</p>';
+
+            document.getElementById('stats-ca').innerText = totalCA.toFixed(2) + " €";
+            document.getElementById('stats-benefice').innerText = totalBenefice.toFixed(2) + " €";
+        }
+
+        function ajouterStock() {
+            const name = document.getElementById('stock-name').value.trim();
+            const cost = parseFloat(document.getElementById('stock-cost').value);
+            const price = parseFloat(document.getElementById('stock-price').value);
+            const qty = parseInt(document.getElementById('stock-qty').value);
+
+            if (!name || isNaN(cost) || isNaN(price) || isNaN(qty)) return alert("Veuillez remplir correctement tous les champs de stock.");
+
+            stocks.push({ id: Date.now().toString(), name, cost, price, qty });
+            
+            // Vider les champs
+            document.getElementById('stock-name').value = '';
