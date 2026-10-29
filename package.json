@@ -1,0 +1,14 @@
+{
+  "name": "ma-compta-app",
+  "version": "1.0.0",
+  "description": "Mon application de comptabilité",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'Pas de compilation web requise'"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/android": "^6.0.0"
+  }
+}
