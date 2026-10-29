@@ -1,10 +1,11 @@
+
 name: Générateur Automatique APK
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch: # Permet de lancer la fabrication de l'APK manuellement
+  workflow_dispatch:
 
 jobs:
   build:
@@ -28,18 +29,23 @@ jobs:
     - name: 4. Installation des outils Capacitor
       run: npm install
 
-    - name: 5. Création du dossier Android
+    - name: 5. Préparation du dossier Web obligatoires
+      run: |
+        mkdir www
+        cp index.html www/
+
+    - name: 6. Création du dossier Android
       run: npx cap add android
 
-    - name: 6. Synchronisation des fichiers
+    - name: 7. Synchronisation des fichiers
       run: npx cap sync
 
-    - name: 7. Compilation du fichier APK final
+    - name: 8. Compilation du fichier APK final
       run: |
         cd android
         ./gradlew assembleDebug
 
-    - name: 8. Mise à disposition de l'APK
+    - name: 9. Mise à disposition de l'APK
       uses: actions/upload-artifact@v4
       with:
         name: Mon-Application-Compta-APK
