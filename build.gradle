@@ -18,8 +18,8 @@ android {
         applicationId "com.monentreprise.macompta"
         minSdk 23
         targetSdk 34
-        versionCode 2
-        versionName "1.1"
+        versionCode 3
+        versionName "1.2"
     }
 
     buildTypes {
@@ -49,36 +49,16 @@ android {
     androidResources {
         noCompress 'html', 'js', 'css'
     }
-
-    // Évite les erreurs liées aux métadonnées de build
-    buildFeatures {
-        buildConfig true
-    }
 }
 
-// ⚠️ Résolution du conflit Kotlin (kotlin-stdlib vs kotlin-stdlib-jdk7/jdk8)
+// Force la version de webkit pour éviter qu'une ancienne version soit utilisée
 configurations.all {
     resolutionStrategy {
-        eachDependency { details ->
-            if (details.requested.group == 'org.jetbrains.kotlin'
-                    && details.requested.name.startsWith('kotlin-stdlib')) {
-                details.useVersion '1.9.24'
-            }
-        }
+        force 'androidx.webkit:webkit:1.14.0'
     }
 }
 
 dependencies {
-    // Contraintes explicites pour neutraliser les anciens modules jdk7/jdk8
-    constraints {
-        implementation('org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.24') {
-            because 'kotlin-stdlib-jdk7 est intégré dans kotlin-stdlib depuis 1.8.0'
-        }
-        implementation('org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24') {
-            because 'kotlin-stdlib-jdk8 est intégré dans kotlin-stdlib depuis 1.8.0'
-        }
-    }
-
     implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.webkit:webkit:1.11.0'
+    implementation 'androidx.webkit:webkit:1.14.0'
 }
