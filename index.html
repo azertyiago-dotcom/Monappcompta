@@ -21,22 +21,19 @@
         .stat-ben { background: #eff6ff; border-color: #bfdbfe; }
         .stat-val { font-size: 20px; font-weight: 700; margin-top: 4px; }
         label { font-size: 12px; font-weight: 600; color: var(--text-light); }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #f8fafc; }
-        input:focus, select:focus { outline: 2px solid var(--primary); background: #fff; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #f8fafc; color: #000; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: block; text-align: center; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-hover); }
         .btn-secondary { background: #0f172a; color: white; }
         .btn-outline { background: white; border: 1px solid #cbd5e1; color: var(--text); }
         .btn-danger { background: #fee2e2; color: #991b1b; }
         .hidden { display: none !important; }
         .badge { padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-stock { background: #f1f5f9; color: var(--text-light); }
+        .badge-stock { background: #e2e8f0; color: #000; }
         .list-container { max-height: 160px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; padding: 8px; font-size: 13px; }
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #e2e8f0; }
-        .list-item:last-child { border-bottom: none; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .tab-btn { flex: 1; padding: 8px; background: #e2e8f0; font-size: 12px; border-radius: 6px; text-align: center; font-weight: 600; }
+        .tab-btn { flex: 1; padding: 8px; background: #e2e8f0; font-size: 12px; border-radius: 6px; text-align: center; font-weight: 600; cursor: pointer; }
         .tab-btn.active { background: var(--primary); color: white; }
     </style>
     <script src="https://cloudflare.com"></script>
@@ -46,43 +43,43 @@
     <div class="container">
         <!-- HEADER -->
         <header>
-            <h1 style="font-size: 22px;">📊 Compta Pro & Factures</h1>
+            <h1 style="font-size: 22px;"> Mon Application Comptable</h1>
             <p id="current-date" style="font-size: 12px; margin-top: 4px; opacity: 0.9;"></p>
         </header>
 
-        <!-- CONFIGURATION ENTREPRISE & TVA -->
+        <!-- CONFIGURATION ENTREPRISE -->
         <div class="card">
-            <h2>⚙️ Paramètres de l'Entreprise</h2>
+            <h2>⚙️ Profil de l'Entreprise</h2>
             <div style="display: flex; flex-direction: column; gap: 8px;">
                 <div>
                     <label>Nom de l'entreprise</label>
-                    <input type="text" id="cfg-company" placeholder="Ex: Mon Entreprise SAS" oninput="sauvegarderProfil()">
+                    <input type="text" id="cfg-company" placeholder="Ex: Mon Entreprise" onkeyup="sauvegarderProfil()">
                 </div>
                 <div>
                     <label>Numéro SIRET</label>
-                    <input type="text" id="cfg-siret" placeholder="Ex: 123 456 789 00012" oninput="sauvegarderProfil()">
+                    <input type="text" id="cfg-siret" placeholder="Ex: 123 456 789 00012" onkeyup="sauvegarderProfil()">
                 </div>
                 <div>
                     <label>Adresse Postale</label>
-                    <input type="text" id="cfg-address" placeholder="Ex: 10 Rue de la Paix, Paris" oninput="sauvegarderProfil()">
+                    <input type="text" id="cfg-address" placeholder="Ex: 10 Rue de la Paix" onkeyup="sauvegarderProfil()">
                 </div>
                 <div class="grid-2">
                     <div>
                         <label>Téléphone</label>
-                        <input type="tel" id="cfg-phone" placeholder="06 00 00 00 00" oninput="sauvegarderProfil()">
+                        <input type="tel" id="cfg-phone" placeholder="06 00 00 00 00" onkeyup="sauvegarderProfil()">
                     </div>
                     <div>
                         <label>E-mail</label>
-                        <input type="email" id="cfg-email" placeholder="contact@pro.fr" oninput="sauvegarderProfil()">
+                        <input type="email" id="cfg-email" placeholder="contact@pro.fr" onkeyup="sauvegarderProfil()">
                     </div>
                 </div>
-                <div style="margin-top: 4px;">
-                    <label>Taux de TVA par défaut (%)</label>
+                <div>
+                    <label>Taux de TVA (%)</label>
                     <select id="config-tva" onchange="rafraichirInterface()">
                         <option value="20">20% (Taux normal)</option>
                         <option value="10">10% (Restauration / Artisanat)</option>
-                        <option value="5.5">5.5% (Alimentaire / Édition)</option>
-                        <option value="0">0% (Franchise de TVA / Auto-entrepreneur)</option>
+                        <option value="5.5">5.5% (Alimentaire)</option>
+                        <option value="0">0% (Auto-entrepreneur)</option>
                     </select>
                 </div>
             </div>
@@ -90,10 +87,10 @@
 
         <!-- TABLEAU DE BORD -->
         <div class="card">
-            <h2>📈 Bilan Financier du Jour</h2>
+            <h2>📈 Bilan du Jour</h2>
             <div class="grid-2">
                 <div class="stat-box stat-ca">
-                    <label style="color: #166534;">Chiffre d'Affaires (TTC)</label>
+                    <label style="color: #166534;">Chiffre d'Affaires</label>
                     <div class="stat-val" id="stats-ca" style="color: #166534;">0.00 €</div>
                 </div>
                 <div class="stat-box stat-ben">
@@ -101,29 +98,31 @@
                     <div class="stat-val" id="stats-benefice" style="color: #1e40af;">0.00 €</div>
                 </div>
             </div>
-            <div class="flex-between" style="font-size: 12px; color: var(--text-light); padding-top: 4px;">
-                <span>Total TVA collectée : <strong id="stats-tva">0.00 €</strong></span>
-                <span>Total HT : <strong id="stats-ht">0.00 €</strong></span>
+            <div class="flex-between" style="font-size: 12px; color: var(--text-light);">
+                <span>TVA : <strong id="stats-tva">0.00 €</strong></span>
+                <span>Hors Taxes : <strong id="stats-ht">0.00 €</strong></span>
             </div>
         </div>
 
-        <!-- SECTION VENTE & PANIER -->
+        <!-- ENREGISTRER UNE VENTE -->
         <div class="card">
-            <h2>🛒 Enregistrer une Vente / Facture</h2>
+            <h2>🛒 Enregistrer un Article</h2>
             
-            <div class="flex-between" style="background: #e2e8f0; padding: 4px; border-radius: 8px; gap: 4px;">
-                <div id="tab-stock" class="tab-btn active" onclick="changerModeVente(false)">Depuis Stock</div>
+            <div class="flex-between" style="background: #e2e8f0; padding: 4px; border-radius: 8px; gap: 4px; margin-bottom: 8px;">
+                <div id="tab-stock" class="tab-btn active" onclick="changerModeVente(false)">Depuis le Stock</div>
                 <div id="tab-libre" class="tab-btn" onclick="changerModeVente(true)">Saisie Directe</div>
             </div>
 
+            <!-- Mode Stock -->
             <div id="zone-vente-stock">
-                <label>Sélectionner le produit</label>
+                <label>Sélectionner l'article</label>
                 <select id="sale-product" onchange="actionSelectionProduit()"></select>
             </div>
 
+            <!-- Mode Saisie Directe -->
             <div id="zone-vente-libre" class="hidden">
-                <label>Nom de l'article / prestation</label>
-                <input type="text" id="sale-product-manual" placeholder="Ex: Prestation de service">
+                <label>Nom de l'article vendu</label>
+                <input type="text" id="sale-product-manual" placeholder="Ex: Article direct">
             </div>
 
             <div class="grid-2" style="margin-top: 4px;">
@@ -137,14 +136,14 @@
                 </div>
             </div>
 
-            <button type="button" class="btn-outline" onclick="ajouterAuPanier()" style="padding: 8px;">➕ Ajouter au panier</button>
+            <button class="btn-outline" onclick="ajouterAuPanier()">➕ Ajouter au panier</button>
 
             <!-- PANIER -->
-            <div id="zone-panier" style="border-top: 1px dashed #cbd5e1; padding-top: 10px;">
-                <label>Panier actuel :</label>
+            <div style="border-top: 1px dashed #cbd5e1; padding-top: 10px; margin-top: 8px;">
+                <label>Contenu du Panier :</label>
                 <div class="list-container" id="panier-liste" style="margin-top: 4px; max-height: 100px;"></div>
                 <div class="flex-between" style="font-weight: 700; margin-top: 8px; font-size: 15px;">
-                    <span>Total à régler :</span>
+                    <span>Total de la Facture :</span>
                     <span id="panier-total">0.00 €</span>
                 </div>
             </div>
@@ -159,16 +158,16 @@
                 </select>
             </div>
 
-            <button type="button" class="btn-primary" onclick="validerTouteLaVente()">🔒 Encaisser & Clôturer la Facture</button>
+            <button class="btn-primary" onclick="validerTouteLaVente()">🔒 Encaisser & Clôturer</button>
         </div>
 
-        <!-- GESTION DES STOCKS -->
+        <!-- STOCKS -->
         <div class="card">
-            <h2>📦 Catalogue & Gestion des Stocks</h2>
+            <h2>📦 Nouvel Article en Stock (Catalogue)</h2>
             <div class="grid-2">
                 <div style="grid-column: span 2;">
                     <label>Nom de l'article</label>
-                    <input type="text" id="stock-name" placeholder="Ex: Article A">
+                    <input type="text" id="stock-name" placeholder="Ex: T-Shirt">
                 </div>
                 <div>
                     <label>Prix d'achat HT (€)</label>
@@ -177,3 +176,9 @@
                 <div>
                     <label>Prix de vente TTC (€)</label>
                     <input type="number" id="stock-price" step="0.01" placeholder="0.00">
+                </div>
+                <div style="grid-column: span 2;">
+                    <label>Quantité en stock</label>
+                    <input type="number" id="stock-qty-init" placeholder="Ex: 100">
+                </div>
+            </div>
