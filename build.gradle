@@ -1,3 +1,17 @@
+// ============================================================
+//  build.gradle — Ma Compta
+//  Configuration Gradle complète (racine du projet)
+// ============================================================
+
+// Dépôts pour les dépendances de l'application (androidx.*, etc.)
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+// Dépôts + plugin pour le build lui-même (AGP)
 buildscript {
     repositories {
         google()
@@ -37,6 +51,7 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
+    // Structure de projet "single module" : les sources sont sous src/main/
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -44,6 +59,16 @@ android {
             assets.srcDirs = ['src/main/assets']
             res.srcDirs = ['src/main/res']
         }
+    }
+
+    // Empêche la compression des assets lus par la WebView
+    androidResources {
+        noCompress 'html', 'js', 'css'
+    }
+
+    // Nécessaire pour BuildConfig.DEBUG dans MainActivity.java
+    buildFeatures {
+        buildConfig true
     }
 }
 
