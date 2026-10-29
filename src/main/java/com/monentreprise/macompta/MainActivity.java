@@ -1,4 +1,3 @@
-
 package com.monentreprise.macompta;
 
 import android.annotation.SuppressLint;
