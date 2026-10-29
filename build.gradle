@@ -1,3 +1,6 @@
+// ============================================================
+//  Repositories pour les PLUGINS Gradle (buildscript)
+// ============================================================
 buildscript {
     repositories {
         google()
@@ -5,7 +8,16 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.5.2'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.22'
+    }
+}
+
+// ============================================================
+//  Repositories pour les DÉPENDANCES de l'app (le bloc manquant)
+// ============================================================
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
     }
 }
 
@@ -52,21 +64,7 @@ android {
     }
 }
 
-// 🔧 CORRECTION DU CONFLIT KOTLIN
-// Force une seule version de kotlin-stdlib pour tout le projet.
-// Évite l'erreur "Duplicate class kotlin.collections.jdk8.CollectionsJDK8Kt"
-configurations.all {
-    resolutionStrategy {
-        force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
-        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
-    }
-}
-
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.webkit:webkit:1.11.0'
-
-    // Déclaration explicite pour aligner la version
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
 }
