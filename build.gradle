@@ -45,11 +45,6 @@ android {
             res.srcDirs = ['src/main/res']
         }
     }
-
-    // Empêche la compression des assets (utile pour la WebView)
-    androidResources {
-        noCompress 'html', 'js', 'css'
-    }
 }
 
 dependencies {
