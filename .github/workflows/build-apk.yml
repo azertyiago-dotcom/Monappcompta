@@ -83,11 +83,10 @@ jobs:
         cp build.gradle app/build.gradle
         echo "include ':app'" > settings.gradle
 
-    - name: 4. Installation forcée de Gradle 8.2
-      run: |
-        wget https://gradle.org
-        unzip -q gradle-8.2-bin.zip
-        echo "$GITHUB_WORKSPACE/gradle-8.2/bin" >> $GITHUB_PATH
+    - name: 4. Configuration officielle de Gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: '8.2.1'
 
     - name: 5. Compilation de l'APK Natif
       run: gradle assembleDebug
