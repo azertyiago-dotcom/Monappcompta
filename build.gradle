@@ -1,17 +1,3 @@
-// ============================================================
-//  build.gradle — Ma Compta
-//  Configuration Gradle complète (racine du projet)
-// ============================================================
-
-// Dépôts pour les dépendances de l'application (androidx.*, etc.)
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
-// Dépôts + plugin pour le build lui-même (AGP)
 buildscript {
     repositories {
         google()
@@ -19,6 +5,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.5.2'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.22'
     }
 }
 
@@ -51,7 +38,6 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    // Structure de projet "single module" : les sources sont sous src/main/
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -61,18 +47,26 @@ android {
         }
     }
 
-    // Empêche la compression des assets lus par la WebView
     androidResources {
         noCompress 'html', 'js', 'css'
     }
+}
 
-    // Nécessaire pour BuildConfig.DEBUG dans MainActivity.java
-    buildFeatures {
-        buildConfig true
+// 🔧 CORRECTION DU CONFLIT KOTLIN
+// Force une seule version de kotlin-stdlib pour tout le projet.
+// Évite l'erreur "Duplicate class kotlin.collections.jdk8.CollectionsJDK8Kt"
+configurations.all {
+    resolutionStrategy {
+        force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
     }
 }
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.webkit:webkit:1.11.0'
+
+    // Déclaration explicite pour aligner la version
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
 }
