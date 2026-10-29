@@ -1,5 +1,6 @@
 package com.monentreprise.macompta;
 
+import android.print.PrintToFileAdapter;
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
