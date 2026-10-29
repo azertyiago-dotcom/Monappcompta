@@ -25,63 +25,38 @@ jobs:
         mkdir -p src/main/assets
         mkdir -p src/main/res/values
         
-        # Transfert direct du fichier HTML de gestion
+        # Transfert direct et sécurisé des fichiers d'origine
         cp index.html src/main/assets/index.html
+        cp AndroidManifest.xml src/main/AndroidManifest.xml
         
-        # Création des configurations de chaînes indispensables
+        # Création des configurations de chaînes
         echo '<resources><string name="app_name">Ma Compta</string></resources>' > src/main/res/values/strings.xml
 
-        # Écriture brute et sécurisée du Manifeste sans interférence textuelle
-        cat << 'EOF' > src/main/AndroidManifest.xml
-        <manifest xmlns:android="http://android.com">
-            <uses-permission android:name="android.permission.INTERNET" />
-            <queries>
-                <package android:name="com.sumup.merchant" />
-            </queries>
-            <application
-                android:label="@string/app_name"
-                android:allowBackup="true"
-                android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
-                <activity android:name="com.monentreprise.macompta.MainActivity"
-                    android:exported="true">
-                    <intent-filter>
-                        <action android:name="android.intent.action.MAIN" />
-                        <category android:name="android.intent.category.LAUNCHER" />
-                    </intent-filter>
-                </activity>
-            </application>
-        </manifest>
-        EOF
-
-        # Configuration de la classe principale d'exécution native
+        # Configuration de la classe d'exécution native (écrite en bloc isolé)
         mkdir -p src/main/java/com/monentreprise/macompta
-        cat << 'EOF' > src/main/java/com/monentreprise/macompta/MainActivity.java
-        package com.monentreprise.macompta;
-        import android.app.Activity;
-        import android.os.Bundle;
-        import android.webkit.WebSettings;
-        import android.webkit.WebView;
-        import android.webkit.WebViewClient;
+        echo "package com.monentreprise.macompta;" > src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "import android.app.Activity;" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "import android.os.Bundle;" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "import android.webkit.WebSettings;" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "import android.webkit.WebView;" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "import android.webkit.WebViewClient;" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "public class MainActivity extends Activity {" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "    @Override" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "    protected void onCreate(Bundle savedInstanceState) {" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "        super.onCreate(savedInstanceState);" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "        WebView webView = new WebView(this);" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "        WebSettings settings = webView.getSettings();" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "        settings.setJavaScriptEnabled(true);" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "        settings.setDomStorageEnabled(true);" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "        settings.setDatabaseEnabled(true);" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "        settings.setAllowFileAccess(true);" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "        webView.setWebViewClient(new WebViewClient());" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "        webView.loadUrl(\"file:///android_asset/index.html\");" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "        setContentView(webView);" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "    }" >> src/main/java/com/monentreprise/macompta/MainActivity.java
+        echo "}" >> src/main/java/com/monentreprise/macompta/MainActivity.java
 
-        public class MainActivity extends Activity {
-            @Override
-            protected void onCreate(Bundle savedInstanceState) {
-                super.onCreate(savedInstanceState);
-                WebView webView = new WebView(this);
-                WebSettings settings = webView.getSettings();
-                settings.setJavaScriptEnabled(true);
-                settings.setDomStorageEnabled(true);
-                settings.setDatabaseEnabled(true);
-                settings.setAllowFileAccess(true);
-                
-                webView.setWebViewClient(new WebViewClient());
-                webView.loadUrl("file:///android_asset/index.html");
-                setContentView(webView);
-            }
-        }
-        EOF
-
-        # Nettoyage et forçage de l'indexation unique de l'arborescence
+        # Nettoyage de l'indexation Gradle
         echo "" > settings.gradle
 
     - name: 4. Configuration officielle de Gradle
