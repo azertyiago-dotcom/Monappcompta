@@ -25,14 +25,35 @@ jobs:
         mkdir -p src/main/assets
         mkdir -p src/main/res/values
         
-        # Copie des fichiers sources sains
+        # Transfert direct du fichier HTML de gestion
         cp index.html src/main/assets/index.html
-        cp AndroidManifest.xml src/main/AndroidManifest.xml
         
-        # Création des textes officiels
+        # Création des configurations de chaînes indispensables
         echo '<resources><string name="app_name">Ma Compta</string></resources>' > src/main/res/values/strings.xml
 
-        # Création de la passerelle logicielle d'exécution
+        # Écriture brute et sécurisée du Manifeste sans interférence textuelle
+        cat << 'EOF' > src/main/AndroidManifest.xml
+        <manifest xmlns:android="http://android.com">
+            <uses-permission android:name="android.permission.INTERNET" />
+            <queries>
+                <package android:name="com.sumup.merchant" />
+            </queries>
+            <application
+                android:label="@string/app_name"
+                android:allowBackup="true"
+                android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+                <activity android:name="com.monentreprise.macompta.MainActivity"
+                    android:exported="true">
+                    <intent-filter>
+                        <action android:name="android.intent.action.MAIN" />
+                        <category android:name="android.intent.category.LAUNCHER" />
+                    </intent-filter>
+                </activity>
+            </application>
+        </manifest>
+        EOF
+
+        # Configuration de la classe principale d'exécution native
         mkdir -p src/main/java/com/monentreprise/macompta
         cat << 'EOF' > src/main/java/com/monentreprise/macompta/MainActivity.java
         package com.monentreprise.macompta;
@@ -60,7 +81,7 @@ jobs:
         }
         EOF
 
-        # Nettoyage de la configuration d'arborescence double
+        # Nettoyage et forçage de l'indexation unique de l'arborescence
         echo "" > settings.gradle
 
     - name: 4. Configuration officielle de Gradle
