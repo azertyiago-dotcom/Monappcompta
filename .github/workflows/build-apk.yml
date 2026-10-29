@@ -20,12 +20,7 @@ jobs:
           java-version: '17'
 
       - name: 3. Setup Android SDK
-        uses: android-actions/setup-android@v4
-
-      - name: 3bis. Acceptation des licences SDK
-        run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools" > /dev/null
+        uses: android-actions/setup-android@v3
 
       - name: 4. Setup Gradle
         uses: gradle/actions/setup-gradle@v4
