@@ -20,17 +20,17 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
 
-    - name: 3. Génération de l'architecture Native Android
+    - name: 3. Génération de l'architecture Native Android Pure
       run: |
-        mkdir -p app/src/main/assets
-        mkdir -p app/src/main/res/values
-        cp index.html app/src/main/assets/index.html
+        mkdir -p src/main/assets
+        mkdir -p src/main/res/values
+        cp index.html src/main/assets/index.html
         
-        # Création des textes
-        echo '<resources><string name="app_name">Ma Compta</string></resources>' > app/src/main/res/values/strings.xml
+        # Création des textes officiels
+        echo '<resources><string name="app_name">Ma Compta</string></resources>' > src/main/res/values/strings.xml
         
-        # Création du manifeste de sécurité avec accès aux requêtes SumUp
-        cat << 'EOF' > app/src/main/AndroidManifest.xml
+        # Création du manifeste de sécurité directement à la racine requise par le système
+        cat << 'EOF' > src/main/AndroidManifest.xml
         <manifest xmlns:android="http://android.com">
             <uses-permission android:name="android.permission.INTERNET" />
             <queries>
@@ -51,9 +51,9 @@ jobs:
         </manifest>
         EOF
 
-        # Création du code natif
-        mkdir -p app/src/main/java/com/monentreprise/macompta
-        cat << 'EOF' > app/src/main/java/com/monentreprise/macompta/MainActivity.java
+        # Création de la passerelle logicielle d'exécution
+        mkdir -p src/main/java/com/monentreprise/macompta
+        cat << 'EOF' > src/main/java/com/monentreprise/macompta/MainActivity.java
         package com.monentreprise.macompta;
         import android.app.Activity;
         import android.os.Bundle;
@@ -79,20 +79,19 @@ jobs:
         }
         EOF
 
-        # Configuration des fichiers de construction
-        cp build.gradle app/build.gradle
-        echo "include ':app'" > settings.gradle
+        # Nettoyage et verrouillage des dépendances de caisse
+        echo "include '.'" > settings.gradle
 
     - name: 4. Configuration officielle de Gradle
       uses: gradle/actions/setup-gradle@v4
       with:
         gradle-version: '8.2.1'
 
-    - name: 5. Compilation de l'APK Natif
+    - name: 5. Compilation de l'APK Natif Final
       run: gradle assembleDebug
 
     - name: 6. Livraison de l'APK fonctionnel
       uses: actions/upload-artifact@v4
       with:
         name: Mon-Application-Compta-APK
-        path: app/build/outputs/apk/debug/app-debug.apk
+        path: build/outputs/apk/debug/*.apk
