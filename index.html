@@ -3,182 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compta Pro & Facturation</title>
+    <title>Compta Mobile</title>
     <style>
-        :root {
-            --primary: #2563eb; --primary-hover: #1d4ed8; --success: #16a34a;
-            --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --text-light: #64748b;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background: var(--bg); color: var(--text); padding: 16px; padding-bottom: 60px; }
-        .container { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-        header { background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 12px; }
-        h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-light); border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
-        .grid-2 { display: grid; grid-template-cols: 1fr 1fr; gap: 12px; }
-        .stat-box { padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; }
-        .stat-ca { background: #f0fdf4; border-color: #bbf7d0; }
-        .stat-ben { background: #eff6ff; border-color: #bfdbfe; }
-        .stat-val { font-size: 20px; font-weight: 700; margin-top: 4px; }
-        label { font-size: 12px; font-weight: 600; color: var(--text-light); }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #f8fafc; color: #000; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: block; text-align: center; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-secondary { background: #0f172a; color: white; }
-        .btn-outline { background: white; border: 1px solid #cbd5e1; color: var(--text); }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background-color: #f1f5f9; color: #1e293b; padding: 15px; }
+        .box { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
+        h2 { font-size: 14px; color: #64748b; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
+        label { display: block; font-size: 12px; font-weight: bold; margin: 8px 0 4px 0; color: #475569; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; background: #f8fafc; margin-bottom: 5px; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .btn-blue { background: #2563eb; color: white; }
+        .btn-dark { background: #1e293b; color: white; }
+        .btn-gray { background: #e2e8f0; color: #1e293b; }
         .btn-danger { background: #fee2e2; color: #991b1b; }
-        .hidden { display: none !important; }
-        .badge { padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-stock { background: #e2e8f0; color: #000; }
-        .list-container { max-height: 160px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; padding: 8px; font-size: 13px; }
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #e2e8f0; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .tab-btn { flex: 1; padding: 8px; background: #e2e8f0; font-size: 12px; border-radius: 6px; text-align: center; font-weight: 600; cursor: pointer; }
-        .tab-btn.active { background: var(--primary); color: white; }
+        .grid { display: grid; grid-template-cols: 1fr 1fr; gap: 10px; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        .hidden { display: none; }
+        .nav-tabs { display: flex; gap: 5px; background: #e2e8f0; padding: 3px; border-radius: 6px; margin-bottom: 10px; }
+        .tab { flex: 1; text-align: center; padding: 6px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .tab.active { background: #2563eb; color: white; }
     </style>
-    <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
-    <div class="container">
-        <!-- HEADER -->
-        <header>
-            <h1 style="font-size: 22px;"> Mon Application Comptable</h1>
-            <p id="current-date" style="font-size: 12px; margin-top: 4px; opacity: 0.9;"></p>
-        </header>
+    <!-- MON ENTREPRISE -->
+    <div class="box">
+        <h2>🏢 Profil Entreprise</h2>
+        <label>Nom de l'établissement</label>
+        <input type="text" id="ent-name" onchange="saveProfil()">
+        <label>SIRET</label>
+        <input type="text" id="ent-siret" onchange="saveProfil()">
+    </div>
 
-        <!-- CONFIGURATION ENTREPRISE -->
-        <div class="card">
-            <h2>⚙️ Profil de l'Entreprise</h2>
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-                <div>
-                    <label>Nom de l'entreprise</label>
-                    <input type="text" id="cfg-company" placeholder="Ex: Mon Entreprise" onkeyup="sauvegarderProfil()">
-                </div>
-                <div>
-                    <label>Numéro SIRET</label>
-                    <input type="text" id="cfg-siret" placeholder="Ex: 123 456 789 00012" onkeyup="sauvegarderProfil()">
-                </div>
-                <div>
-                    <label>Adresse Postale</label>
-                    <input type="text" id="cfg-address" placeholder="Ex: 10 Rue de la Paix" onkeyup="sauvegarderProfil()">
-                </div>
-                <div class="grid-2">
-                    <div>
-                        <label>Téléphone</label>
-                        <input type="tel" id="cfg-phone" placeholder="06 00 00 00 00" onkeyup="sauvegarderProfil()">
-                    </div>
-                    <div>
-                        <label>E-mail</label>
-                        <input type="email" id="cfg-email" placeholder="contact@pro.fr" onkeyup="sauvegarderProfil()">
-                    </div>
-                </div>
-                <div>
-                    <label>Taux de TVA (%)</label>
-                    <select id="config-tva" onchange="rafraichirInterface()">
-                        <option value="20">20% (Taux normal)</option>
-                        <option value="10">10% (Restauration / Artisanat)</option>
-                        <option value="5.5">5.5% (Alimentaire)</option>
-                        <option value="0">0% (Auto-entrepreneur)</option>
-                    </select>
-                </div>
-            </div>
+    <!-- BILAN -->
+    <div class="box" style="background: #f0fdf4;">
+        <h2>📈 Bilan du Jour (TTC)</h2>
+        <div style="font-size: 24px; font-weight: bold; color: #166534;" id="txt-ca">0.00 €</div>
+    </div>
+
+    <!-- VENTE -->
+    <div class="box">
+        <h2>🛒 Enregistrer un Article</h2>
+        
+        <div class="nav-tabs">
+            <div id="t-stock" class="tab active" onclick="setMode(false)">Depuis Stock</div>
+            <div id="t-libre" class="tab" onclick="setMode(true)">Saisie Directe</div>
         </div>
 
-        <!-- TABLEAU DE BORD -->
-        <div class="card">
-            <h2>📈 Bilan du Jour</h2>
-            <div class="grid-2">
-                <div class="stat-box stat-ca">
-                    <label style="color: #166534;">Chiffre d'Affaires</label>
-                    <div class="stat-val" id="stats-ca" style="color: #166534;">0.00 €</div>
-                </div>
-                <div class="stat-box stat-ben">
-                    <label style="color: #1e40af;">Bénéfice Net</label>
-                    <div class="stat-val" id="stats-benefice" style="color: #1e40af;">0.00 €</div>
-                </div>
-            </div>
-            <div class="flex-between" style="font-size: 12px; color: var(--text-light);">
-                <span>TVA : <strong id="stats-tva">0.00 €</strong></span>
-                <span>Hors Taxes : <strong id="stats-ht">0.00 €</strong></span>
-            </div>
+        <div id="v-stock">
+            <label>Choisir le produit</label>
+            <select id="sel-product" onchange="selectProd()"></select>
         </div>
 
-        <!-- ENREGISTRER UNE VENTE -->
-        <div class="card">
-            <h2>🛒 Enregistrer un Article</h2>
-            
-            <div class="flex-between" style="background: #e2e8f0; padding: 4px; border-radius: 8px; gap: 4px; margin-bottom: 8px;">
-                <div id="tab-stock" class="tab-btn active" onclick="changerModeVente(false)">Depuis le Stock</div>
-                <div id="tab-libre" class="tab-btn" onclick="changerModeVente(true)">Saisie Directe</div>
-            </div>
+        <div id="v-libre" class="hidden">
+            <label>Nom de l'article</label>
+            <input type="text" id="inp-name-libre" placeholder="Ex: Café emporter">
+        </div>
 
-            <!-- Mode Stock -->
-            <div id="zone-vente-stock">
-                <label>Sélectionner l'article</label>
-                <select id="sale-product" onchange="actionSelectionProduit()"></select>
-            </div>
-
-            <!-- Mode Saisie Directe -->
-            <div id="zone-vente-libre" class="hidden">
-                <label>Nom de l'article vendu</label>
-                <input type="text" id="sale-product-manual" placeholder="Ex: Article direct">
-            </div>
-
-            <div class="grid-2" style="margin-top: 4px;">
-                <div>
-                    <label>Prix de vente TTC (€)</label>
-                    <input type="number" id="sale-price" step="0.01" placeholder="0.00">
-                </div>
-                <div>
-                    <label>Quantité</label>
-                    <input type="number" id="sale-qty" value="1" min="1">
-                </div>
-            </div>
-
-            <button class="btn-outline" onclick="ajouterAuPanier()">➕ Ajouter au panier</button>
-
-            <!-- PANIER -->
-            <div style="border-top: 1px dashed #cbd5e1; padding-top: 10px; margin-top: 8px;">
-                <label>Contenu du Panier :</label>
-                <div class="list-container" id="panier-liste" style="margin-top: 4px; max-height: 100px;"></div>
-                <div class="flex-between" style="font-weight: 700; margin-top: 8px; font-size: 15px;">
-                    <span>Total de la Facture :</span>
-                    <span id="panier-total">0.00 €</span>
-                </div>
-            </div>
-
+        <div class="grid">
             <div>
-                <label>Mode de règlement</label>
-                <select id="sale-payment" style="margin-top: 4px;">
-                    <option value="Espèces">💵 Espèces</option>
-                    <option value="Chèque">✍️ Chèque</option>
-                    <option value="Virement">🏦 Virement</option>
-                    <option value="Carte (SumUp)">💳 Carte Bancaire (SumUp)</option>
-                </select>
+                <label>Prix TTC (€)</label>
+                <input type="number" id="inp-price" step="0.01" placeholder="0.00">
             </div>
-
-            <button class="btn-primary" onclick="validerTouteLaVente()">🔒 Encaisser & Clôturer</button>
+            <div>
+                <label>Quantité</label>
+                <input type="number" id="inp-qty" value="1" min="1">
+            </div>
         </div>
 
-        <!-- STOCKS -->
-        <div class="card">
-            <h2>📦 Nouvel Article en Stock (Catalogue)</h2>
-            <div class="grid-2">
-                <div style="grid-column: span 2;">
-                    <label>Nom de l'article</label>
-                    <input type="text" id="stock-name" placeholder="Ex: T-Shirt">
-                </div>
-                <div>
-                    <label>Prix d'achat HT (€)</label>
-                    <input type="number" id="stock-cost" step="0.01" placeholder="0.00">
-                </div>
-                <div>
-                    <label>Prix de vente TTC (€)</label>
-                    <input type="number" id="stock-price" step="0.01" placeholder="0.00">
-                </div>
-                <div style="grid-column: span 2;">
-                    <label>Quantité en stock</label>
-                    <input type="number" id="stock-qty-init" placeholder="Ex: 100">
-                </div>
+        <button class="btn-gray" onclick="addPanier()">➕ Ajouter au panier</button>
+
+        <div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+            <label>Panier :</label>
+            <div id="liste-panier"></div>
+            <div style="display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px;">
+                <span>TOTAL :</span>
+                <span id="txt-total-panier">0.00 €</span>
             </div>
+        </div>
+
+        <label>Mode de paiement</label>
+        <select id="sel-pay">
+            <option value="Espèces">💵 Espèces</option>
+            <option value="Chèque">✍️ Chèque</option>
+            <option value="Carte (SumUp)">💳 Carte Bancaire (SumUp)</option>
+        </select>
+
+        <button class="btn-blue" onclick="encaisser()">🔒 Encaisser et Clôturer</button>
+    </div>
+
+    <!-- INVENTAIRE -->
+    <div class="box">
+        <h2>📦 Ajouter au Stock</h2>
+        <label>Nom du produit</label>
+        <input type="text" id="stk-name" placeholder="Ex: T-shirt XL">
+        <div class="grid">
+            <div>
+                <label>Prix Vente TTC (€)</label>
+                <input type="number" id="stk-price" step="0.01" placeholder="0.00">
+            </div>
+            <div>
+                <label>Quantité</label>
+                <input type="number" id="stk-qty" placeholder="10">
+            </div>
+        </div>
+        <button class="btn-dark" onclick="createStock()">Créer l'article</button>
+
+        <label style="margin-top: 15px;">Inventaire actuel :</label>
+        <div id="liste-stock"></div>
+    </div>
+
+    <!-- HISTORIQUE -->
+    <div class="box">
+        <h2>📜 Factures Émises</h2>
+        <div id="liste-historique"></div>
+        <button class="btn-danger" onclick="clearAll()" style="margin-top: 20px; font-size: 12px; padding: 5px;">⚠️ Réinitialiser</button>
+    </div>
+
+    <script>
+        let stocks = JSON.parse(localStorage.getItem('stk_data')) || [];
+        let ventes = JSON.parse(localStorage.getItem('vnt_data')) || [];
+        let profil = JSON.parse(localStorage.getItem('prf_data')) || { name: "", siret: "" };
+        let panier = [];
+        let isLibre = false;
+
+        // Charger profil
+        document.getElementById('ent-name').value = profil.name || "";
+        document.getElementById('ent-siret').value = profil.siret || "";
+
+        function saveProfil() {
+            profil.name = document.getElementById('ent-name').value;
+            profil.siret = document.getElementById('ent-siret').value;
+            localStorage.setItem('prf_data', JSON.stringify(profil));
+        }
+
+        function setMode(mode) {
+            isLibre = mode;
+            document.getElementById('t-stock').className = mode ? "tab" : "tab active";
+            document.getElementById('t-libre').className = mode ? "tab active" : "tab";
+            document.getElementById('v-stock').className = mode ? "hidden" : "";
+            document.getElementById('v-libre').className = mode ? "" : "hidden";
+            document.getElementById('inp-price').value = "";
+            if(!mode) selectProd();
+        }
+
+        function selectProd() {
+            if(isLibre) return;
+            const id = document.getElementById('sel-product').value;
+            const item = stocks.find(p => p.id === id);
+            if(item) document.getElementById('inp-price').value = item.price;
+        }
+
+        function createStock() {
+            const name = document.getElementById('stk-name').value.trim();
+            const price = parseFloat(document.getElementById('stk-price').value);
+            const qty = parseInt(document.getElementById('stk-qty').value);
+
+            if(!name || isNaN(price) || isNaN(qty)) {
+                alert("Remplissez toutes les cases du stock.");
+                return;
+            }
+
+            stocks.push({ id: "ID-" + Date.now(), name, price, qty });
+            document.getElementById('stk-name').value = "";
+            document.getElementById('stk-price').value = "";
+            document.getElementById('stk-qty').value = "";
+            render();
+        }
+
+        function addPanier() {
+            const qty = parseInt(document.getElementById('inp-qty').value);
+            const price = parseFloat(document.getElementById('inp-price').value);
+
+            if(isNaN(price) || qty < 1) {
+                alert("Prix ou quantité incorrect.");
+                return;
+            }
+
+            let name = "";
+            let pId = "MANUEL";
+
+            if(isLibre) {
+                name = document.getElementById('inp-name-libre').value.trim();
+                if(!name) { alert("Entrez le nom de l'article."); return; }
+            } else {
+                const id = document.getElementById('sel-product').value;
+                const idx = stocks.findIndex(p => p.id === id);
+                if(idx === -1) { alert("Sélectionnez un article."); return; }
+                if(stocks[idx].qty < qty) { alert("Pas assez de stock."); return; }
+                name = stocks[idx].name;
+                pId = stocks[idx].id;
+            }
+
+            panier.push({ pId, name, qty, price, total: price * qty });
+            document.getElementById('inp-name-libre').value = "";
+            document.getElementById('inp-price').value = "";
+            document.getElementById('inp-qty').value = "1";
+            render();
+        }
+
+        function removePanier(idx) {
+            panier.splice(idx, 1);
+            render();
+        }
+
+        function encaisser() {
+            if(panier.length === 0) { alert("Le panier est vide."); return; }
+            const payMode = document.getElementById('sel-pay').value;
+
+            // Déduire les stocks si ce n'est pas une saisie directe
+            panier.forEach(item => {
+                if(item.pId !== "MANUEL") {
+                    const idx = stocks.findIndex(p => p.id === item.pId);
+                    if(idx !== -1) stocks[idx].qty -= item.qty;
+                }
+            });
+
+            let totalFacture = 0;
+            panier.forEach(i => totalFacture += i.total);
+
+            const fRef = "FAC-" + Math.floor(1000 + Math.random() * 9000);
+            const nouvelleVente = {
+                id: fRef,
+                date: new Date().toLocaleDateString('fr-FR'),
+                total: totalFacture,
+                payment: payMode,
+                details: [...panier]
+            };
+
+            ventes.push(nouvelleVente);
+            panier = [];
+            render();
+
+            if(payMode === "Carte (SumUp)") {
