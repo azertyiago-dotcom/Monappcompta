@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 1. Checkout du code
+      - name: 1. Checkout
         uses: actions/checkout@v4
 
       - name: 2. Setup Java 17
@@ -20,9 +20,7 @@ jobs:
           java-version: '17'
 
       - name: 3. Setup Android SDK
-        uses: android-actions/setup-android@v4
-        with:
-          packages: 'platform-tools'
+        uses: android-actions/setup-android@v3
 
       - name: 4. Setup Gradle
         uses: gradle/actions/setup-gradle@v4
