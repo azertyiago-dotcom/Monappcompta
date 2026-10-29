@@ -1,18 +1,22 @@
-<manifest xmlns:android="http://android.com">
-    
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
     <uses-permission android:name="android.permission.INTERNET" />
-    
-    <queries>
-        <package android:name="com.sumup.merchant" />
-    </queries>
-    
+
     <application
-        android:label="Ma Compta"
-        android:allowBackup="true"
-        android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
-        
-        <activity android:name="com.monentreprise.macompta.MainActivity"
-            android:exported="true">
+        android:label="@string/app_name"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:allowBackup="false"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MaCompta">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
