@@ -25,14 +25,33 @@ jobs:
         mkdir -p src/main/assets
         mkdir -p src/main/res/values
         
-        # Transfert direct et sécurisé des fichiers d'origine
+        # Transfert direct du fichier HTML de gestion
         cp index.html src/main/assets/index.html
-        cp AndroidManifest.xml src/main/AndroidManifest.xml
         
-        # Création des configurations de chaînes
+        # Création des configurations de chaînes indispensables
         echo '<resources><string name="app_name">Ma Compta</string></resources>' > src/main/res/values/strings.xml
 
-        # Configuration de la classe d'exécution native (écrite en bloc isolé)
+        # Écriture brute et isolée du Manifeste de Sécurité sans interférence Linux
+        echo '<manifest xmlns:android="http://android.com">' > src/main/AndroidManifest.xml
+        echo '    <uses-permission android:name="android.permission.INTERNET" />' >> src/main/AndroidManifest.xml
+        echo '    <queries>' >> src/main/AndroidManifest.xml
+        echo '        <package android:name="com.sumup.merchant" />' >> src/main/AndroidManifest.xml
+        echo '    </queries>' >> src/main/AndroidManifest.xml
+        echo '    <application' >> src/main/AndroidManifest.xml
+        echo '        android:label="@string/app_name"' >> src/main/AndroidManifest.xml
+        echo '        android:allowBackup="true"' >> src/main/AndroidManifest.xml
+        echo '        android:theme="@android:style/Theme.DeviceDefault.NoActionBar">' >> src/main/AndroidManifest.xml
+        echo '        <activity android:name="com.monentreprise.macompta.MainActivity"' >> src/main/AndroidManifest.xml
+        echo '            android:exported="true">' >> src/main/AndroidManifest.xml
+        echo '            <intent-filter>' >> src/main/AndroidManifest.xml
+        echo '                <action android:name="android.intent.action.MAIN" />' >> src/main/AndroidManifest.xml
+        echo '                <category android:name="android.intent.category.LAUNCHER" />' >> src/main/AndroidManifest.xml
+        echo '            </intent-filter>' >> src/main/AndroidManifest.xml
+        echo '        </activity>' >> src/main/AndroidManifest.xml
+        echo '    </application>' >> src/main/AndroidManifest.xml
+        echo '</manifest>' >> src/main/AndroidManifest.xml
+
+        # Configuration de la classe principale d'exécution native
         mkdir -p src/main/java/com/monentreprise/macompta
         echo "package com.monentreprise.macompta;" > src/main/java/com/monentreprise/macompta/MainActivity.java
         echo "import android.app.Activity;" >> src/main/java/com/monentreprise/macompta/MainActivity.java
@@ -56,7 +75,7 @@ jobs:
         echo "    }" >> src/main/java/com/monentreprise/macompta/MainActivity.java
         echo "}" >> src/main/java/com/monentreprise/macompta/MainActivity.java
 
-        # Nettoyage de l'indexation Gradle
+        # Forçage de l'arborescence
         echo "" > settings.gradle
 
     - name: 4. Configuration officielle de Gradle
