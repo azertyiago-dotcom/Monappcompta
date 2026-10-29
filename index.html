@@ -10,15 +10,15 @@
         .box { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
         h2 { font-size: 14px; color: #64748b; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
         label { display: block; font-size: 12px; font-weight: bold; margin: 8px 0 4px 0; color: #475569; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; background: #f8fafc; margin-bottom: 5px; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; background: #f8fafc; margin-bottom: 5px; color: #000; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 5px; -webkit-appearance: none; }
         .btn-blue { background: #2563eb; color: white; }
         .btn-dark { background: #1e293b; color: white; }
         .btn-gray { background: #e2e8f0; color: #1e293b; }
         .btn-danger { background: #fee2e2; color: #991b1b; }
         .grid { display: grid; grid-template-cols: 1fr 1fr; gap: 10px; }
         .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .nav-tabs { display: flex; gap: 5px; background: #e2e8f0; padding: 3px; border-radius: 6px; margin-bottom: 10px; }
         .tab { flex: 1; text-align: center; padding: 6px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
         .tab.active { background: #2563eb; color: white; }
@@ -26,25 +26,21 @@
 </head>
 <body>
 
-    <!-- MON ENTREPRISE -->
     <div class="box">
-        <h2>🏢 Profil Entreprise</h2>
-        <label>Nom de l'établissement</label>
-        <input type="text" id="ent-name" onchange="saveProfil()">
+        <h2>🏢 Mon Établissement</h2>
+        <label>Nom de l'entreprise</label>
+        <input type="text" id="ent-name" oninput="saveProfil()">
         <label>SIRET</label>
-        <input type="text" id="ent-siret" onchange="saveProfil()">
+        <input type="text" id="ent-siret" oninput="saveProfil()">
     </div>
 
-    <!-- BILAN -->
     <div class="box" style="background: #f0fdf4;">
         <h2>📈 Bilan du Jour (TTC)</h2>
         <div style="font-size: 24px; font-weight: bold; color: #166534;" id="txt-ca">0.00 €</div>
     </div>
 
-    <!-- VENTE -->
     <div class="box">
         <h2>🛒 Enregistrer un Article</h2>
-        
         <div class="nav-tabs">
             <div id="t-stock" class="tab active" onclick="setMode(false)">Depuis Stock</div>
             <div id="t-libre" class="tab" onclick="setMode(true)">Saisie Directe</div>
@@ -57,7 +53,7 @@
 
         <div id="v-libre" class="hidden">
             <label>Nom de l'article</label>
-            <input type="text" id="inp-name-libre" placeholder="Ex: Café emporter">
+            <input type="text" id="inp-name-libre" placeholder="Ex: Café ou Prestation">
         </div>
 
         <div class="grid">
@@ -74,7 +70,7 @@
         <button class="btn-gray" onclick="addPanier()">➕ Ajouter au panier</button>
 
         <div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
-            <label>Panier :</label>
+            <label>Panier Actuel :</label>
             <div id="liste-panier"></div>
             <div style="display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px;">
                 <span>TOTAL :</span>
@@ -92,7 +88,6 @@
         <button class="btn-blue" onclick="encaisser()">🔒 Encaisser et Clôturer</button>
     </div>
 
-    <!-- INVENTAIRE -->
     <div class="box">
         <h2>📦 Ajouter au Stock</h2>
         <label>Nom du produit</label>
@@ -109,32 +104,37 @@
         </div>
         <button class="btn-dark" onclick="createStock()">Créer l'article</button>
 
-        <label style="margin-top: 15px;">Inventaire actuel :</label>
+        <label style="margin-top: 15px;">Inventaire Réel :</label>
         <div id="liste-stock"></div>
     </div>
 
-    <!-- HISTORIQUE -->
     <div class="box">
-        <h2>📜 Factures Émises</h2>
+        <h2>📜 Factures Clôturées</h2>
         <div id="liste-historique"></div>
-        <button class="btn-danger" onclick="clearAll()" style="margin-top: 20px; font-size: 12px; padding: 5px;">⚠️ Réinitialiser</button>
+        <button class="btn-danger" onclick="clearAll()" style="margin-top: 20px; font-size: 11px; padding: 6px;">⚠️ Tout Réinitialiser</button>
     </div>
 
     <script>
-        let stocks = JSON.parse(localStorage.getItem('stk_data')) || [];
-        let ventes = JSON.parse(localStorage.getItem('vnt_data')) || [];
-        let profil = JSON.parse(localStorage.getItem('prf_data')) || { name: "", siret: "" };
+        // Utilisation d'une protection en mémoire pour éviter le gel de la WebView
+        let stocks = [];
+        let ventes = [];
+        let profil = { name: "", siret: "" };
         let panier = [];
         let isLibre = false;
 
-        // Charger profil
+        try {
+            stocks = JSON.parse(localStorage.getItem('stk_data')) || [];
+            ventes = JSON.parse(localStorage.getItem('vnt_data')) || [];
+            profil = JSON.parse(localStorage.getItem('prf_data')) || { name: "", siret: "" };
+        } catch(e) { console.log("Erreur stockage isolé"); }
+
         document.getElementById('ent-name').value = profil.name || "";
         document.getElementById('ent-siret').value = profil.siret || "";
 
         function saveProfil() {
             profil.name = document.getElementById('ent-name').value;
             profil.siret = document.getElementById('ent-siret').value;
-            localStorage.setItem('prf_data', JSON.stringify(profil));
+            try { localStorage.setItem('prf_data', JSON.stringify(profil)); } catch(e){}
         }
 
         function setMode(mode) {
@@ -160,7 +160,7 @@
             const qty = parseInt(document.getElementById('stk-qty').value);
 
             if(!name || isNaN(price) || isNaN(qty)) {
-                alert("Remplissez toutes les cases du stock.");
+                alert("Erreur : Veuillez remplir toutes les cases.");
                 return;
             }
 
@@ -176,7 +176,7 @@
             const price = parseFloat(document.getElementById('inp-price').value);
 
             if(isNaN(price) || qty < 1) {
-                alert("Prix ou quantité incorrect.");
+                alert("Indiquez un prix et une quantité.");
                 return;
             }
 
@@ -190,7 +190,7 @@
                 const id = document.getElementById('sel-product').value;
                 const idx = stocks.findIndex(p => p.id === id);
                 if(idx === -1) { alert("Sélectionnez un article."); return; }
-                if(stocks[idx].qty < qty) { alert("Pas assez de stock."); return; }
+                if(stocks[idx].qty < qty) { alert("Stock insuffisant."); return; }
                 name = stocks[idx].name;
                 pId = stocks[idx].id;
             }
@@ -208,10 +208,9 @@
         }
 
         function encaisser() {
-            if(panier.length === 0) { alert("Le panier est vide."); return; }
+            if(panier.length === 0) { alert("Votre panier est vide."); return; }
             const payMode = document.getElementById('sel-pay').value;
 
-            // Déduire les stocks si ce n'est pas une saisie directe
             panier.forEach(item => {
                 if(item.pId !== "MANUEL") {
                     const idx = stocks.findIndex(p => p.id === item.pId);
@@ -222,17 +221,12 @@
             let totalFacture = 0;
             panier.forEach(i => totalFacture += i.total);
 
-            const fRef = "FAC-" + Math.floor(1000 + Math.random() * 9000);
+            const fRef = "F-" + Math.floor(1000 + Math.random() * 9000);
             const nouvelleVente = {
                 id: fRef,
                 date: new Date().toLocaleDateString('fr-FR'),
                 total: totalFacture,
-                payment: payMode,
-                details: [...panier]
+                payment: payMode
             };
 
             ventes.push(nouvelleVente);
-            panier = [];
-            render();
-
-            if(payMode === "Carte (SumUp)") {
