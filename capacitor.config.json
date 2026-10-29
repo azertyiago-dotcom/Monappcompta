@@ -1,8 +1,0 @@
-{
-  "appId": "com.monentreprise.macompta",
-  "appName": "Ma Compta",
-  "webDir": "www",
-  "server": {
-    "androidScheme": "https"
-  }
-}
