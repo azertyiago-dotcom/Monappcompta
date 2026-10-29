@@ -1,0 +1,45 @@
+name: Générateur Automatique APK
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Permet de lancer la fabrication de l'APK manuellement
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 1. Récupération du code
+      uses: actions/checkout@v4
+
+    - name: 2. Installation de Java (Requis pour Android)
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: 3. Installation de Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: 4. Installation des outils Capacitor
+      run: npm install
+
+    - name: 5. Création du dossier Android
+      run: |
+        npx cap static
+        npx cap add android
+
+    - name: 6. Compilation du fichier APK final
+      run: |
+        cd android
+        ./gradlew assembleDebug
+
+    - name: 7. Mise à disposition de l'APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: Mon-Application-Compta-APK
+        path: android/app/build/outputs/apk/debug/app-debug.apk
