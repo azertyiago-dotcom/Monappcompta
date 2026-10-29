@@ -3,174 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compta & Stock - SumUp</title>
-    <!-- Version stable de Tailwind CSS -->
-    <script src="https://jsdelivr.net"></script>
-    <!-- Librairie pour la génération de PDF -->
+    <title>Compta Pro & Facturation</title>
+    <style>
+        :root {
+            --primary: #2563eb; --primary-hover: #1d4ed8; --success: #16a34a;
+            --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --text-light: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 16px; padding-bottom: 60px; }
+        .container { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        header { background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 12px; }
+        h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-light); border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+        .grid-2 { display: grid; grid-template-cols: 1fr 1fr; gap: 12px; }
+        .stat-box { padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .stat-ca { background: #f0fdf4; border-color: #bbf7d0; }
+        .stat-ben { background: #eff6ff; border-color: #bfdbfe; }
+        .stat-val { font-size: 20px; font-weight: 700; margin-top: 4px; }
+        label { font-size: 12px; font-weight: 600; color: var(--text-light); }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #f8fafc; }
+        input:focus, select:focus { outline: 2px solid var(--primary); background: #fff; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-secondary { background: #0f172a; color: white; }
+        .btn-outline { background: white; border: 1px solid #cbd5e1; color: var(--text); }
+        .btn-danger { background: #fee2e2; color: #991b1b; }
+        .hidden { display: none !important; }
+        .badge { padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .badge-stock { background: #f1f5f9; color: var(--text-light); }
+        .list-container { max-height: 160px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; padding: 8px; font-size: 13px; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #e2e8f0; }
+        .list-item:last-child { border-bottom: none; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .tab-btn { flex: 1; padding: 8px; background: #e2e8f0; font-size: 12px; border-radius: 6px; text-align: center; font-weight: 600; }
+        .tab-btn.active { background: var(--primary); color: white; }
+    </style>
     <script src="https://cloudflare.com"></script>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans p-4 pb-12">
+<body>
 
-    <div class="max-w-md mx-auto space-y-6">
-        <!-- TITRE -->
-        <header class="bg-blue-600 text-white p-4 rounded-xl shadow-md text-center">
-            <h1 class="text-xl font-bold">📊 Ma Compta & Stock</h1>
-            <p class="text-xs opacity-80" id="current-date"></p>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <h1 style="font-size: 22px;">📊 Compta Pro & Factures</h1>
+            <p id="current-date" style="font-size: 12px; margin-top: 4px; opacity: 0.9;"></p>
         </header>
 
-        <!-- TABLEAU DE BORD DU JOUR -->
-        <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-            <h2 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wider">📈 Bilan du Jour</h2>
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-green-50 p-3 rounded-lg border border-green-200">
-                    <p class="text-xs text-green-700 font-medium">Chiffre d'Affaires</p>
-                    <p class="text-xl font-bold text-green-600" id="stats-ca">0.00 €</p>
+        <!-- CONFIGURATION ENTREPRISE & TVA -->
+        <div class="card">
+            <h2>⚙️ Paramètres de l'Entreprise</h2>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div>
+                    <label>Nom de l'entreprise</label>
+                    <input type="text" id="cfg-company" placeholder="Ex: Mon Entreprise SAS" oninput="sauvegarderProfil()">
                 </div>
-                <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                    <p class="text-xs text-blue-700 font-medium">Bénéfice Net</p>
-                    <p class="text-xl font-bold text-blue-600" id="stats-benefice">0.00 €</p>
+                <div>
+                    <label>Numéro SIRET</label>
+                    <input type="text" id="cfg-siret" placeholder="Ex: 123 456 789 00012" oninput="sauvegarderProfil()">
+                </div>
+                <div>
+                    <label>Adresse Postale</label>
+                    <input type="text" id="cfg-address" placeholder="Ex: 10 Rue de la Paix, Paris" oninput="sauvegarderProfil()">
+                </div>
+                <div class="grid-2">
+                    <div>
+                        <label>Téléphone</label>
+                        <input type="tel" id="cfg-phone" placeholder="06 00 00 00 00" oninput="sauvegarderProfil()">
+                    </div>
+                    <div>
+                        <label>E-mail</label>
+                        <input type="email" id="cfg-email" placeholder="contact@pro.fr" oninput="sauvegarderProfil()">
+                    </div>
+                </div>
+                <div style="margin-top: 4px;">
+                    <label>Taux de TVA par défaut (%)</label>
+                    <select id="config-tva" onchange="rafraichirInterface()">
+                        <option value="20">20% (Taux normal)</option>
+                        <option value="10">10% (Restauration / Artisanat)</option>
+                        <option value="5.5">5.5% (Alimentaire / Édition)</option>
+                        <option value="0">0% (Franchise de TVA / Auto-entrepreneur)</option>
+                    </select>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- FORMULAIRE DE VENTE -->
-        <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-3">
-            <div class="flex justify-between items-center">
-                <h2 class="font-semibold text-gray-700 text-sm uppercase tracking-wider">🛒 Enregistrer une Vente</h2>
-                <!-- Mode de saisie switch -->
-                <button onclick="toggleModeVente()" id="btn-mode-vente" class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded font-medium">
-                    Mode : Depuis le Stock
-                </button>
+        <!-- TABLEAU DE BORD -->
+        <div class="card">
+            <h2>📈 Bilan Financier du Jour</h2>
+            <div class="grid-2">
+                <div class="stat-box stat-ca">
+                    <label style="color: #166534;">Chiffre d'Affaires (TTC)</label>
+                    <div class="stat-val" id="stats-ca" style="color: #166534;">0.00 €</div>
+                </div>
+                <div class="stat-box stat-ben">
+                    <label style="color: #1e40af;">Bénéfice Net</label>
+                    <div class="stat-val" id="stats-benefice" style="color: #1e40af;">0.00 €</div>
+                </div>
             </div>
-            
-            <!-- Zone Produit (Change selon le mode) -->
-            <div id="zone-produit-stock">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Sélectionner un produit du stock</label>
-                <select id="sale-product" class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-gray-50" onchange="updateSalePrice()">
-                    <option value="">-- Choisir un produit --</option>
-                </select>
+            <div class="flex-between" style="font-size: 12px; color: var(--text-light); padding-top: 4px;">
+                <span>Total TVA collectée : <strong id="stats-tva">0.00 €</strong></span>
+                <span>Total HT : <strong id="stats-ht">0.00 €</strong></span>
             </div>
+        </div>
+
+        <!-- SECTION VENTE & PANIER -->
+        <div class="card">
+            <h2>🛒 Enregistrer une Vente / Facture</h2>
             
-            <div id="zone-produit-libre" class="hidden">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Nom du produit (Saisie directe)</label>
-                <input type="text" id="sale-product-manual" class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-gray-50" placeholder="Ex: Café, Prestation, etc.">
+            <div class="flex-between" style="background: #e2e8f0; padding: 4px; border-radius: 8px; gap: 4px;">
+                <div id="tab-stock" class="tab-btn active" onclick="changerModeVente(false)">Depuis Stock</div>
+                <div id="tab-libre" class="tab-btn" onclick="changerModeVente(true)">Saisie Directe</div>
+            </div>
+
+            <div id="zone-vente-stock">
+                <label>Sélectionner le produit</label>
+                <select id="sale-product" onchange="actionSelectionProduit()"></select>
+            </div>
+
+            <div id="zone-vente-libre" class="hidden">
+                <label>Nom de l'article / prestation</label>
+                <input type="text" id="sale-product-manual" placeholder="Ex: Prestation de service">
+            </div>
+
+            <div class="grid-2" style="margin-top: 4px;">
+                <div>
+                    <label>Prix de vente TTC (€)</label>
+                    <input type="number" id="sale-price" step="0.01" placeholder="0.00">
+                </div>
+                <div>
+                    <label>Quantité</label>
+                    <input type="number" id="sale-qty" value="1" min="1">
+                </div>
+            </div>
+
+            <button type="button" class="btn-outline" onclick="ajouterAuPanier()" style="padding: 8px;">➕ Ajouter au panier</button>
+
+            <!-- PANIER -->
+            <div id="zone-panier" style="border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+                <label>Panier actuel :</label>
+                <div class="list-container" id="panier-liste" style="margin-top: 4px; max-height: 100px;"></div>
+                <div class="flex-between" style="font-weight: 700; margin-top: 8px; font-size: 15px;">
+                    <span>Total à régler :</span>
+                    <span id="panier-total">0.00 €</span>
+                </div>
             </div>
 
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Prix de vente (€)</label>
-                <input type="number" id="sale-price" step="0.01" class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-gray-50" placeholder="0.00">
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Mode de règlement</label>
-                <select id="sale-payment" class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-gray-50">
+                <label>Mode de règlement</label>
+                <select id="sale-payment" style="margin-top: 4px;">
                     <option value="Espèces">💵 Espèces</option>
                     <option value="Chèque">✍️ Chèque</option>
                     <option value="Virement">🏦 Virement</option>
                     <option value="Carte (SumUp)">💳 Carte Bancaire (SumUp)</option>
                 </select>
             </div>
-            <button onclick="ajouterVente()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg shadow hover:bg-blue-700 active:scale-[0.98] transition text-sm">
-                Valider la Vente
-            </button>
-        </section>
 
-        <!-- AJOUT / GESTION DES STOCKS -->
-        <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-3">
-            <h2 class="font-semibold text-gray-700 text-sm uppercase tracking-wider">📦 Gestion des Stocks</h2>
-            <div class="grid grid-cols-2 gap-2">
-                <input type="text" id="stock-name" placeholder="Nom du produit" class="p-2 border border-gray-300 rounded-lg text-sm col-span-2 bg-gray-50">
-                <input type="number" id="stock-cost" step="0.01" placeholder="Prix d'achat (€)" class="p-2 border border-gray-300 rounded-lg text-sm bg-gray-50">
-                <input type="number" id="stock-price" step="0.01" placeholder="Prix de vente (€)" class="p-2 border border-gray-300 rounded-lg text-sm bg-gray-50">
-                <input type="number" id="stock-qty" placeholder="Quantité initiale" class="p-2 border border-gray-300 rounded-lg text-sm col-span-2 bg-gray-50">
-            </div>
-            <button onclick="ajouterStock()" class="w-full bg-gray-800 text-white font-semibold py-2 rounded-lg text-sm hover:bg-gray-900">
-                Ajouter au Catalogue / Stock
-            </button>
-            
-            <!-- Liste des stocks actuels -->
-            <div class="mt-2 max-h-36 overflow-y-auto border border-gray-200 rounded-lg p-2 bg-gray-50 text-xs space-y-1" id="stock-list">
-                <!-- Rempli par JavaScript -->
-            </div>
-        </section>
+            <button type="button" class="btn-primary" onclick="validerTouteLaVente()">🔒 Encaisser & Clôturer la Facture</button>
+        </div>
 
-        <!-- HISTORIQUE DES VENTES & ACTIONS D'EXPORT -->
-        <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-3">
-            <div class="flex justify-between items-center">
-                <h2 class="font-semibold text-gray-700 text-sm uppercase tracking-wider">📜 Historique Général</h2>
-                <button onclick="clearAllData()" class="text-xs text-red-500 hover:underline">Réinitialiser</button>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="exporterTXT()" class="bg-gray-200 text-gray-700 py-2 rounded-lg text-xs font-semibold hover:bg-gray-300">💾 Exporter en TXT</button>
-                <button onclick="exporterPDF()" class="bg-red-100 text-red-700 py-2 rounded-lg text-xs font-semibold hover:bg-red-200">📄 Exporter en PDF</button>
-            </div>
-
-            <div class="max-h-48 overflow-y-auto border border-gray-200 rounded-lg bg-gray-50" id="sales-history">
-                <!-- Rempli par JavaScript -->
-            </div>
-        </section>
-    </div>
-
-    <!-- LOGIQUE LOGICIELLE DE L'APPLICATION -->
-    <script>
-        let stocks = JSON.parse(localStorage.getItem('compta_stocks')) || [];
-        let ventes = JSON.parse(localStorage.getItem('compta_ventes')) || [];
-        let modeVenteDirecte = false; // False = Stock, True = Manuel/Direct
-
-        document.getElementById('current-date').innerText = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-        function toggleModeVente() {
-            modeVenteDirecte = !modeVenteDirecte;
-            const btn = document.getElementById('btn-mode-vente');
-            const zoneStock = document.getElementById('zone-produit-stock');
-            const zoneLibre = document.getElementById('zone-produit-libre');
-            
-            if(modeVenteDirecte) {
-                btn.innerText = "Mode : Saisie Directe";
-                btn.className = "text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded font-medium";
-                zoneStock.classList.add('hidden');
-                zoneLibre.classList.remove('hidden');
-                document.getElementById('sale-price').value = '';
-            } else {
-                btn.innerText = "Mode : Depuis le Stock";
-                btn.className = "text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded font-medium";
-                zoneStock.classList.remove('hidden');
-                zoneLibre.classList.add('hidden');
-                updateSalePrice();
-            }
-        }
-
-        function rafraichirInterface() {
-            localStorage.setItem('compta_stocks', JSON.stringify(stocks));
-            localStorage.setItem('compta_ventes', JSON.stringify(ventes));
-
-            // Mettre à jour le sélecteur de produits
-            const saleProductSelect = document.getElementById('sale-product');
-            saleProductSelect.innerHTML = '<option value="">-- Choisir un produit --</option>';
-            stocks.forEach(p => {
-                saleProductSelect.innerHTML += `<option value="${p.id}">${p.name} (Dispo: ${p.qty})</option>`;
-            });
-
-            // Afficher le catalogue / stock (Correction affichage)
-            const stockListDiv = document.getElementById('stock-list');
-            if (stocks.length === 0) {
-                stockListDiv.innerHTML = '<p class="text-gray-400 italic">Aucun produit en stock.</p>';
-            } else {
-                stockListDiv.innerHTML = '';
-                stocks.forEach(p => {
-                    stockListDiv.innerHTML += `
-                        <div class="flex justify-between border-b border-gray-200 py-1">
-                            <span><strong>${p.name}</strong> (x${p.qty})</span>
-                            <span class="text-gray-500">${p.cost}€ ach. | ${p.price}€ vent.</span>
-                        </div>`;
-                });
-            }
-
-            // Historique et Statistiques
-            const salesHistoryDiv = document.getElementById('sales-history');
-            salesHistoryDiv.innerHTML = '';
-            
-            let totalCA = 0;
-            let totalBenefice = 0;
-            const aujourdHui = new Date().toDateString();
-
+        <!-- GESTION DES STOCKS -->
+        <div class="card">
+            <h2>📦 Catalogue & Gestion des Stocks</h2>
+            <div class="grid-2">
+                <div style="grid-column: span 2;">
+                    <label>Nom de l'article</label>
+                    <input type="text" id="stock-name" placeholder="Ex: Article A">
+                </div>
+                <div>
+                    <label>Prix d'achat HT (€)</label>
+                    <input type="number" id="stock-cost" step="0.01" placeholder="0.00">
+                </div>
+                <div>
+                    <label>Prix de vente TTC (€)</label>
+                    <input type="number" id="stock-price" step="0.01" placeholder="0.00">
