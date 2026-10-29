@@ -1,0 +1,23 @@
+<manifest xmlns:android="http://android.com"
+    package="com.monentreprise.macompta">
+    
+    <uses-permission android:name="android.permission.INTERNET" />
+    
+    <queries>
+        <package android:name="com.sumup.merchant" />
+    </queries>
+    
+    <application
+        android:label="Ma Compta"
+        android:allowBackup="true"
+        android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+        
+        <activity android:name="com.monentreprise.macompta.MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
