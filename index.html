@@ -118,14 +118,12 @@
 </div>
 
 <script>
-    // ---------- État ----------
     let stocks = [];
     let ventes = [];
     let profil = { name: "", siret: "" };
     let panier = [];
     let isLibre = false;
 
-    // ---------- Persistance ----------
     function loadAll() {
         try { stocks = JSON.parse(localStorage.getItem('stk_data')) || []; } catch(e) { stocks = []; }
         try { ventes = JSON.parse(localStorage.getItem('vnt_data')) || []; } catch(e) { ventes = []; }
@@ -139,13 +137,11 @@
         try { localStorage.setItem('prf_data', JSON.stringify(profil)); } catch(e){}
     }
 
-    // ---------- Format ----------
     function fmt(n) { return Number(n).toFixed(2) + ' €'; }
     function esc(s) {
         return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
 
-    // ---------- Mode ----------
     function setMode(mode) {
         isLibre = mode;
         document.getElementById('t-stock').className = mode ? "tab" : "tab active";
@@ -163,7 +159,6 @@
         document.getElementById('inp-price').value = item ? item.price : "";
     }
 
-    // ---------- Stock ----------
     function createStock() {
         const name = document.getElementById('stk-name').value.trim();
         const price = parseFloat(document.getElementById('stk-price').value);
@@ -182,7 +177,6 @@
         render();
     }
 
-    // ---------- Panier ----------
     function addPanier() {
         const qty = parseInt(document.getElementById('inp-qty').value);
         const price = parseFloat(document.getElementById('inp-price').value);
@@ -218,13 +212,11 @@
         render();
     }
 
-    // ---------- Encaissement ----------
     function encaisser() {
         if (panier.length === 0) { alert("Votre panier est vide."); return; }
 
         const payMode = document.getElementById('sel-pay').value;
 
-        // Décrémente le stock
         panier.forEach(item => {
             if (item.pId !== "MANUEL") {
                 const idx = stocks.findIndex(p => p.id === item.pId);
@@ -250,7 +242,6 @@
         alert("Facture " + fRef + " clôturée.\nTotal : " + fmt(totalFacture));
     }
 
-    // ---------- Reset ----------
     function clearAll() {
         if (!confirm("⚠️ Supprimer TOUTES les données (stock, ventes, profil) ?\nAction irréversible.")) return;
         if (!confirm("Vraiment sûr ? Faites une sauvegarde avant.")) return;
@@ -265,20 +256,16 @@
         render();
     }
 
-    // ---------- Rendu ----------
     function render() {
-        // Profil
         document.getElementById('ent-name').value = profil.name || "";
         document.getElementById('ent-siret').value = profil.siret || "";
 
-        // CA du jour (basé sur date "fr-FR" jour)
         const today = new Date().toLocaleDateString('fr-FR');
         const ca = ventes
             .filter(v => v.date && v.date.startsWith(today))
             .reduce((s, v) => s + v.total, 0);
         document.getElementById('txt-ca').textContent = fmt(ca);
 
-        // Sélecteur produits
         const sel = document.getElementById('sel-product');
         if (stocks.length === 0) {
             sel.innerHTML = '<option value="">— Aucun article en stock —</option>';
@@ -288,7 +275,6 @@
             ).join('');
         }
 
-        // Liste panier
         const lp = document.getElementById('liste-panier');
         if (panier.length === 0) {
             lp.innerHTML = '<div class="empty">Panier vide</div>';
@@ -304,7 +290,6 @@
         document.getElementById('txt-total-panier').textContent =
             fmt(panier.reduce((s, i) => s + i.total, 0));
 
-        // Stock
         const ls = document.getElementById('liste-stock');
         if (stocks.length === 0) {
             ls.innerHTML = '<div class="empty">Aucun article</div>';
@@ -316,7 +301,6 @@
                 </div>`).join('');
         }
 
-        // Historique
         const lh = document.getElementById('liste-historique');
         if (ventes.length === 0) {
             lh.innerHTML = '<div class="empty">Aucune facture</div>';
@@ -329,7 +313,6 @@
         }
     }
 
-    // ---------- Boot ----------
     loadAll();
     render();
 </script>
