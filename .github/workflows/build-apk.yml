@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 1. Checkout
+      - name: 1. Checkout du code
         uses: actions/checkout@v4
 
       - name: 2. Setup Java 17
@@ -20,7 +20,12 @@ jobs:
           java-version: '17'
 
       - name: 3. Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+
+      - name: 3bis. Acceptation des licences SDK
+        run: |
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools" > /dev/null
 
       - name: 4. Setup Gradle
         uses: gradle/actions/setup-gradle@v4
