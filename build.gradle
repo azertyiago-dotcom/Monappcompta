@@ -22,7 +22,7 @@ android {
         versionName "1.1"
     }
 
-    // ✅ Active la génération de BuildConfig (désactivée par défaut avec AGP 8+)
+    // ✅ Active la génération de BuildConfig
     buildFeatures {
         buildConfig true
     }
@@ -53,6 +53,18 @@ android {
 
     androidResources {
         noCompress 'html', 'js', 'css'
+    }
+}
+
+// ✅ CORRECTION : Aligne tous les artefacts Kotlin stdlib sur la même version
+configurations.all {
+    resolutionStrategy {
+        eachDependency { details ->
+            if (details.requested.group == 'org.jetbrains.kotlin'
+                    && details.requested.name.startsWith('kotlin-stdlib')) {
+                details.useVersion '1.8.22'
+            }
+        }
     }
 }
 
