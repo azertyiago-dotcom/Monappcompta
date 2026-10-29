@@ -14,7 +14,7 @@ jobs:
     - name: 1. Récupération du code
       uses: actions/checkout@v4
 
-    - name: 2. Configuration de Java et Gradle
+    - name: 2. Configuration de Java
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
@@ -51,7 +51,7 @@ jobs:
         </manifest>
         EOF
 
-        # Création du code natif pour forcer l'autorisation de stockage et JavaScript
+        # Création du code natif
         mkdir -p app/src/main/java/com/monentreprise/macompta
         cat << 'EOF' > app/src/main/java/com/monentreprise/macompta/MainActivity.java
         package com.monentreprise.macompta;
@@ -79,15 +79,18 @@ jobs:
         }
         EOF
 
-        # Configuration des fichiers de construction Gradle
+        # Configuration des fichiers de construction
         cp build.gradle app/build.gradle
         echo "include ':app'" > settings.gradle
 
-    - name: 4. Configuration de Gradle Wrapper
-      run: gradle wrapper --gradle-version 8.2
+    - name: 4. Installation forcée de Gradle 8.2
+      run: |
+        wget https://gradle.org
+        unzip -q gradle-8.2-bin.zip
+        echo "$GITHUB_WORKSPACE/gradle-8.2/bin" >> $GITHUB_PATH
 
     - name: 5. Compilation de l'APK Natif
-      run: ./gradlew assembleDebug
+      run: gradle assembleDebug
 
     - name: 6. Livraison de l'APK fonctionnel
       uses: actions/upload-artifact@v4
