@@ -2,11 +2,11 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compta Mobile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ma Compta</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background-color: #f1f5f9; color: #1e293b; padding: 15px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; }
+        body { background-color: #f1f5f9; color: #1e293b; padding: 15px; padding-bottom: 40px; }
         .box { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
         h2 { font-size: 14px; color: #64748b; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
         label { display: block; font-size: 12px; font-weight: bold; margin: 8px 0 4px 0; color: #475569; }
@@ -16,217 +16,322 @@
         .btn-dark { background: #1e293b; color: white; }
         .btn-gray { background: #e2e8f0; color: #1e293b; }
         .btn-danger { background: #fee2e2; color: #991b1b; }
-        .grid { display: grid; grid-template-cols: 1fr 1fr; gap: 10px; }
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; gap: 8px; }
+        .item-row small { color: #64748b; }
+        .btn-mini { width: auto; padding: 4px 8px; font-size: 11px; margin: 0; border-radius: 4px; }
         .hidden { display: none !important; }
         .nav-tabs { display: flex; gap: 5px; background: #e2e8f0; padding: 3px; border-radius: 6px; margin-bottom: 10px; }
         .tab { flex: 1; text-align: center; padding: 6px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
         .tab.active { background: #2563eb; color: white; }
+        .empty { text-align: center; color: #94a3b8; font-size: 12px; padding: 10px; font-style: italic; }
     </style>
 </head>
 <body>
 
-    <div class="box">
-        <h2>🏢 Mon Établissement</h2>
-        <label>Nom de l'entreprise</label>
-        <input type="text" id="ent-name" oninput="saveProfil()">
-        <label>SIRET</label>
-        <input type="text" id="ent-siret" oninput="saveProfil()">
+<div class="box">
+    <h2>🏢 Mon Établissement</h2>
+    <label>Nom de l'entreprise</label>
+    <input type="text" id="ent-name" oninput="saveProfil()">
+    <label>SIRET</label>
+    <input type="text" id="ent-siret" oninput="saveProfil()">
+</div>
+
+<div class="box" style="background: #f0fdf4;">
+    <h2>📈 Bilan du Jour (TTC)</h2>
+    <div style="font-size: 24px; font-weight: bold; color: #166534;" id="txt-ca">0.00 €</div>
+</div>
+
+<div class="box">
+    <h2>🛒 Enregistrer un Article</h2>
+    <div class="nav-tabs">
+        <div id="t-stock" class="tab active" onclick="setMode(false)">Depuis Stock</div>
+        <div id="t-libre" class="tab" onclick="setMode(true)">Saisie Directe</div>
     </div>
 
-    <div class="box" style="background: #f0fdf4;">
-        <h2>📈 Bilan du Jour (TTC)</h2>
-        <div style="font-size: 24px; font-weight: bold; color: #166534;" id="txt-ca">0.00 €</div>
+    <div id="v-stock">
+        <label>Choisir le produit</label>
+        <select id="sel-product" onchange="selectProd()"></select>
     </div>
 
-    <div class="box">
-        <h2>🛒 Enregistrer un Article</h2>
-        <div class="nav-tabs">
-            <div id="t-stock" class="tab active" onclick="setMode(false)">Depuis Stock</div>
-            <div id="t-libre" class="tab" onclick="setMode(true)">Saisie Directe</div>
-        </div>
-
-        <div id="v-stock">
-            <label>Choisir le produit</label>
-            <select id="sel-product" onchange="selectProd()"></select>
-        </div>
-
-        <div id="v-libre" class="hidden">
-            <label>Nom de l'article</label>
-            <input type="text" id="inp-name-libre" placeholder="Ex: Café ou Prestation">
-        </div>
-
-        <div class="grid">
-            <div>
-                <label>Prix TTC (€)</label>
-                <input type="number" id="inp-price" step="0.01" placeholder="0.00">
-            </div>
-            <div>
-                <label>Quantité</label>
-                <input type="number" id="inp-qty" value="1" min="1">
-            </div>
-        </div>
-
-        <button class="btn-gray" onclick="addPanier()">➕ Ajouter au panier</button>
-
-        <div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
-            <label>Panier Actuel :</label>
-            <div id="liste-panier"></div>
-            <div style="display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px;">
-                <span>TOTAL :</span>
-                <span id="txt-total-panier">0.00 €</span>
-            </div>
-        </div>
-
-        <label>Mode de paiement</label>
-        <select id="sel-pay">
-            <option value="Espèces">💵 Espèces</option>
-            <option value="Chèque">✍️ Chèque</option>
-            <option value="Carte (SumUp)">💳 Carte Bancaire (SumUp)</option>
-        </select>
-
-        <button class="btn-blue" onclick="encaisser()">🔒 Encaisser et Clôturer</button>
+    <div id="v-libre" class="hidden">
+        <label>Nom de l'article</label>
+        <input type="text" id="inp-name-libre" placeholder="Ex: Café ou Prestation">
     </div>
 
-    <div class="box">
-        <h2>📦 Ajouter au Stock</h2>
-        <label>Nom du produit</label>
-        <input type="text" id="stk-name" placeholder="Ex: T-shirt XL">
-        <div class="grid">
-            <div>
-                <label>Prix Vente TTC (€)</label>
-                <input type="number" id="stk-price" step="0.01" placeholder="0.00">
-            </div>
-            <div>
-                <label>Quantité</label>
-                <input type="number" id="stk-qty" placeholder="10">
-            </div>
+    <div class="grid">
+        <div>
+            <label>Prix TTC (€)</label>
+            <input type="number" id="inp-price" step="0.01" placeholder="0.00">
         </div>
-        <button class="btn-dark" onclick="createStock()">Créer l'article</button>
-
-        <label style="margin-top: 15px;">Inventaire Réel :</label>
-        <div id="liste-stock"></div>
+        <div>
+            <label>Quantité</label>
+            <input type="number" id="inp-qty" value="1" min="1">
+        </div>
     </div>
 
-    <div class="box">
-        <h2>📜 Factures Clôturées</h2>
-        <div id="liste-historique"></div>
-        <button class="btn-danger" onclick="clearAll()" style="margin-top: 20px; font-size: 11px; padding: 6px;">⚠️ Tout Réinitialiser</button>
+    <button class="btn-gray" onclick="addPanier()">➕ Ajouter au panier</button>
+
+    <div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+        <label>Panier Actuel :</label>
+        <div id="liste-panier"></div>
+        <div style="display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px;">
+            <span>TOTAL :</span>
+            <span id="txt-total-panier">0.00 €</span>
+        </div>
     </div>
 
-    <script>
-        // Utilisation d'une protection en mémoire pour éviter le gel de la WebView
-        let stocks = [];
-        let ventes = [];
-        let profil = { name: "", siret: "" };
-        let panier = [];
-        let isLibre = false;
+    <label>Mode de paiement</label>
+    <select id="sel-pay">
+        <option value="Espèces">💵 Espèces</option>
+        <option value="Chèque">✍️ Chèque</option>
+        <option value="Carte (SumUp)">💳 Carte Bancaire (SumUp)</option>
+    </select>
 
+    <button class="btn-blue" onclick="encaisser()">🔒 Encaisser et Clôturer</button>
+</div>
+
+<div class="box">
+    <h2>📦 Ajouter au Stock</h2>
+    <label>Nom du produit</label>
+    <input type="text" id="stk-name" placeholder="Ex: T-shirt XL">
+    <div class="grid">
+        <div>
+            <label>Prix Vente TTC (€)</label>
+            <input type="number" id="stk-price" step="0.01" placeholder="0.00">
+        </div>
+        <div>
+            <label>Quantité</label>
+            <input type="number" id="stk-qty" placeholder="10">
+        </div>
+    </div>
+    <button class="btn-dark" onclick="createStock()">Créer l'article</button>
+
+    <label style="margin-top: 15px;">Inventaire Réel :</label>
+    <div id="liste-stock"></div>
+</div>
+
+<div class="box">
+    <h2>📜 Factures Clôturées</h2>
+    <div id="liste-historique"></div>
+    <button class="btn-danger" onclick="clearAll()" style="margin-top: 20px; font-size: 11px; padding: 6px;">⚠️ Tout Réinitialiser</button>
+</div>
+
+<script>
+    // ---------- État ----------
+    let stocks = [];
+    let ventes = [];
+    let profil = { name: "", siret: "" };
+    let panier = [];
+    let isLibre = false;
+
+    // ---------- Persistance ----------
+    function loadAll() {
+        try { stocks = JSON.parse(localStorage.getItem('stk_data')) || []; } catch(e) { stocks = []; }
+        try { ventes = JSON.parse(localStorage.getItem('vnt_data')) || []; } catch(e) { ventes = []; }
+        try { profil = JSON.parse(localStorage.getItem('prf_data')) || { name: "", siret: "" }; } catch(e) { profil = { name: "", siret: "" }; }
+    }
+    function saveStocks() { try { localStorage.setItem('stk_data', JSON.stringify(stocks)); } catch(e){ console.warn(e); } }
+    function saveVentes() { try { localStorage.setItem('vnt_data', JSON.stringify(ventes)); } catch(e){ console.warn(e); } }
+    function saveProfil() {
+        profil.name = document.getElementById('ent-name').value;
+        profil.siret = document.getElementById('ent-siret').value;
+        try { localStorage.setItem('prf_data', JSON.stringify(profil)); } catch(e){}
+    }
+
+    // ---------- Format ----------
+    function fmt(n) { return Number(n).toFixed(2) + ' €'; }
+    function esc(s) {
+        return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    // ---------- Mode ----------
+    function setMode(mode) {
+        isLibre = mode;
+        document.getElementById('t-stock').className = mode ? "tab" : "tab active";
+        document.getElementById('t-libre').className = mode ? "tab active" : "tab";
+        document.getElementById('v-stock').className = mode ? "hidden" : "";
+        document.getElementById('v-libre').className = mode ? "" : "hidden";
+        document.getElementById('inp-price').value = "";
+        if (!mode) selectProd();
+    }
+
+    function selectProd() {
+        if (isLibre) return;
+        const id = document.getElementById('sel-product').value;
+        const item = stocks.find(p => p.id === id);
+        document.getElementById('inp-price').value = item ? item.price : "";
+    }
+
+    // ---------- Stock ----------
+    function createStock() {
+        const name = document.getElementById('stk-name').value.trim();
+        const price = parseFloat(document.getElementById('stk-price').value);
+        const qty = parseInt(document.getElementById('stk-qty').value);
+
+        if (!name || isNaN(price) || isNaN(qty) || price < 0 || qty < 0) {
+            alert("Erreur : Veuillez remplir toutes les cases correctement.");
+            return;
+        }
+
+        stocks.push({ id: "ID-" + Date.now(), name, price, qty });
+        document.getElementById('stk-name').value = "";
+        document.getElementById('stk-price').value = "";
+        document.getElementById('stk-qty').value = "";
+        saveStocks();
+        render();
+    }
+
+    // ---------- Panier ----------
+    function addPanier() {
+        const qty = parseInt(document.getElementById('inp-qty').value);
+        const price = parseFloat(document.getElementById('inp-price').value);
+
+        if (isNaN(price) || isNaN(qty) || qty < 1 || price < 0) {
+            alert("Indiquez un prix et une quantité valides.");
+            return;
+        }
+
+        let name, pId = "MANUEL";
+
+        if (isLibre) {
+            name = document.getElementById('inp-name-libre').value.trim();
+            if (!name) { alert("Entrez le nom de l'article."); return; }
+        } else {
+            const id = document.getElementById('sel-product').value;
+            const idx = stocks.findIndex(p => p.id === id);
+            if (idx === -1) { alert("Sélectionnez un article."); return; }
+            if (stocks[idx].qty < qty) { alert("Stock insuffisant."); return; }
+            name = stocks[idx].name;
+            pId = stocks[idx].id;
+        }
+
+        panier.push({ pId, name, qty, price, total: price * qty });
+        document.getElementById('inp-name-libre').value = "";
+        document.getElementById('inp-price').value = "";
+        document.getElementById('inp-qty').value = "1";
+        render();
+    }
+
+    function removePanier(idx) {
+        panier.splice(idx, 1);
+        render();
+    }
+
+    // ---------- Encaissement ----------
+    function encaisser() {
+        if (panier.length === 0) { alert("Votre panier est vide."); return; }
+
+        const payMode = document.getElementById('sel-pay').value;
+
+        // Décrémente le stock
+        panier.forEach(item => {
+            if (item.pId !== "MANUEL") {
+                const idx = stocks.findIndex(p => p.id === item.pId);
+                if (idx !== -1) stocks[idx].qty -= item.qty;
+            }
+        });
+
+        const totalFacture = panier.reduce((s, i) => s + i.total, 0);
+        const fRef = "F-" + Date.now().toString().slice(-6);
+        const nouvelleVente = {
+            id: fRef,
+            date: new Date().toLocaleString('fr-FR'),
+            total: totalFacture,
+            payment: payMode,
+            items: panier.map(i => ({ name: i.name, qty: i.qty, price: i.price }))
+        };
+
+        ventes.push(nouvelleVente);
+        panier = [];
+        saveStocks();
+        saveVentes();
+        render();
+        alert("Facture " + fRef + " clôturée.\nTotal : " + fmt(totalFacture));
+    }
+
+    // ---------- Reset ----------
+    function clearAll() {
+        if (!confirm("⚠️ Supprimer TOUTES les données (stock, ventes, profil) ?\nAction irréversible.")) return;
+        if (!confirm("Vraiment sûr ? Faites une sauvegarde avant.")) return;
+        stocks = []; ventes = []; panier = []; profil = { name: "", siret: "" };
         try {
-            stocks = JSON.parse(localStorage.getItem('stk_data')) || [];
-            ventes = JSON.parse(localStorage.getItem('vnt_data')) || [];
-            profil = JSON.parse(localStorage.getItem('prf_data')) || { name: "", siret: "" };
-        } catch(e) { console.log("Erreur stockage isolé"); }
+            localStorage.removeItem('stk_data');
+            localStorage.removeItem('vnt_data');
+            localStorage.removeItem('prf_data');
+        } catch(e){}
+        document.getElementById('ent-name').value = "";
+        document.getElementById('ent-siret').value = "";
+        render();
+    }
 
+    // ---------- Rendu ----------
+    function render() {
+        // Profil
         document.getElementById('ent-name').value = profil.name || "";
         document.getElementById('ent-siret').value = profil.siret || "";
 
-        function saveProfil() {
-            profil.name = document.getElementById('ent-name').value;
-            profil.siret = document.getElementById('ent-siret').value;
-            try { localStorage.setItem('prf_data', JSON.stringify(profil)); } catch(e){}
+        // CA du jour (basé sur date "fr-FR" jour)
+        const today = new Date().toLocaleDateString('fr-FR');
+        const ca = ventes
+            .filter(v => v.date && v.date.startsWith(today))
+            .reduce((s, v) => s + v.total, 0);
+        document.getElementById('txt-ca').textContent = fmt(ca);
+
+        // Sélecteur produits
+        const sel = document.getElementById('sel-product');
+        if (stocks.length === 0) {
+            sel.innerHTML = '<option value="">— Aucun article en stock —</option>';
+        } else {
+            sel.innerHTML = stocks.map(p =>
+                `<option value="${esc(p.id)}">${esc(p.name)} — ${fmt(p.price)} (x${p.qty})</option>`
+            ).join('');
         }
 
-        function setMode(mode) {
-            isLibre = mode;
-            document.getElementById('t-stock').className = mode ? "tab" : "tab active";
-            document.getElementById('t-libre').className = mode ? "tab active" : "tab";
-            document.getElementById('v-stock').className = mode ? "hidden" : "";
-            document.getElementById('v-libre').className = mode ? "" : "hidden";
-            document.getElementById('inp-price').value = "";
-            if(!mode) selectProd();
+        // Liste panier
+        const lp = document.getElementById('liste-panier');
+        if (panier.length === 0) {
+            lp.innerHTML = '<div class="empty">Panier vide</div>';
+        } else {
+            lp.innerHTML = panier.map((i, idx) => `
+                <div class="item-row">
+                    <span>${esc(i.name)} <small>x${i.qty}</small></span>
+                    <span>${fmt(i.total)}
+                        <button class="btn-danger btn-mini" onclick="removePanier(${idx})">✕</button>
+                    </span>
+                </div>`).join('');
+        }
+        document.getElementById('txt-total-panier').textContent =
+            fmt(panier.reduce((s, i) => s + i.total, 0));
+
+        // Stock
+        const ls = document.getElementById('liste-stock');
+        if (stocks.length === 0) {
+            ls.innerHTML = '<div class="empty">Aucun article</div>';
+        } else {
+            ls.innerHTML = stocks.map(p => `
+                <div class="item-row">
+                    <span>${esc(p.name)} <small>— ${fmt(p.price)}</small></span>
+                    <span>Stock : <strong>${p.qty}</strong></span>
+                </div>`).join('');
         }
 
-        function selectProd() {
-            if(isLibre) return;
-            const id = document.getElementById('sel-product').value;
-            const item = stocks.find(p => p.id === id);
-            if(item) document.getElementById('inp-price').value = item.price;
+        // Historique
+        const lh = document.getElementById('liste-historique');
+        if (ventes.length === 0) {
+            lh.innerHTML = '<div class="empty">Aucune facture</div>';
+        } else {
+            lh.innerHTML = ventes.slice().reverse().map(v => `
+                <div class="item-row">
+                    <span><strong>${esc(v.id)}</strong><br><small>${esc(v.date)} — ${esc(v.payment)}</small></span>
+                    <span>${fmt(v.total)}</span>
+                </div>`).join('');
         }
+    }
 
-        function createStock() {
-            const name = document.getElementById('stk-name').value.trim();
-            const price = parseFloat(document.getElementById('stk-price').value);
-            const qty = parseInt(document.getElementById('stk-qty').value);
-
-            if(!name || isNaN(price) || isNaN(qty)) {
-                alert("Erreur : Veuillez remplir toutes les cases.");
-                return;
-            }
-
-            stocks.push({ id: "ID-" + Date.now(), name, price, qty });
-            document.getElementById('stk-name').value = "";
-            document.getElementById('stk-price').value = "";
-            document.getElementById('stk-qty').value = "";
-            render();
-        }
-
-        function addPanier() {
-            const qty = parseInt(document.getElementById('inp-qty').value);
-            const price = parseFloat(document.getElementById('inp-price').value);
-
-            if(isNaN(price) || qty < 1) {
-                alert("Indiquez un prix et une quantité.");
-                return;
-            }
-
-            let name = "";
-            let pId = "MANUEL";
-
-            if(isLibre) {
-                name = document.getElementById('inp-name-libre').value.trim();
-                if(!name) { alert("Entrez le nom de l'article."); return; }
-            } else {
-                const id = document.getElementById('sel-product').value;
-                const idx = stocks.findIndex(p => p.id === id);
-                if(idx === -1) { alert("Sélectionnez un article."); return; }
-                if(stocks[idx].qty < qty) { alert("Stock insuffisant."); return; }
-                name = stocks[idx].name;
-                pId = stocks[idx].id;
-            }
-
-            panier.push({ pId, name, qty, price, total: price * qty });
-            document.getElementById('inp-name-libre').value = "";
-            document.getElementById('inp-price').value = "";
-            document.getElementById('inp-qty').value = "1";
-            render();
-        }
-
-        function removePanier(idx) {
-            panier.splice(idx, 1);
-            render();
-        }
-
-        function encaisser() {
-            if(panier.length === 0) { alert("Votre panier est vide."); return; }
-            const payMode = document.getElementById('sel-pay').value;
-
-            panier.forEach(item => {
-                if(item.pId !== "MANUEL") {
-                    const idx = stocks.findIndex(p => p.id === item.pId);
-                    if(idx !== -1) stocks[idx].qty -= item.qty;
-                }
-            });
-
-            let totalFacture = 0;
-            panier.forEach(i => totalFacture += i.total);
-
-            const fRef = "F-" + Math.floor(1000 + Math.random() * 9000);
-            const nouvelleVente = {
-                id: fRef,
-                date: new Date().toLocaleDateString('fr-FR'),
-                total: totalFacture,
-                payment: payMode
-            };
-
-            ventes.push(nouvelleVente);
+    // ---------- Boot ----------
+    loadAll();
+    render();
+</script>
+</body>
+</html>
