@@ -42,11 +42,23 @@
     <input type="text" id="ent-name" oninput="saveProfil()">
     <label>SIRET</label>
     <input type="text" id="ent-siret" oninput="saveProfil()">
+    <label>Adresse</label>
+    <input type="text" id="ent-address" placeholder="N°, rue, code postal, ville" oninput="saveProfil()">
+    <label>E-mail</label>
+    <input type="email" id="ent-email" oninput="saveProfil()">
+    <label>Téléphone</label>
+    <input type="tel" id="ent-phone" oninput="saveProfil()">
+    <label>Mention de bas de facture (optionnel)</label>
+    <input type="text" id="ent-mention" placeholder="Ex : mention propre à votre régime de TVA" oninput="saveProfil()">
 </div>
 
 <div class="box" style="background: #f0fdf4;">
     <h2>📈 Bilan du Jour (TTC)</h2>
     <div style="font-size: 24px; font-weight: bold; color: #166534;" id="txt-ca">0.00 €</div>
+    <label>Éditer le bilan d'une date</label>
+    <input type="date" id="bil-date" onchange="renderBilanApercu()">
+    <div id="bil-apercu"></div>
+    <button class="btn-dark" onclick="editerBilan()">📄 Éditer le bilan (PDF)</button>
 </div>
 
 <div class="box">
@@ -107,7 +119,12 @@
         <option value="Espèces">💵 Espèces</option>
         <option value="Chèque">✍️ Chèque</option>
         <option value="Carte (SumUp)">💳 Carte Bancaire (SumUp)</option>
+        <option value="Apple Pay">🍎 Apple Pay</option>
+        <option value="Google Pay">🟢 Google Pay</option>
+        <option value="Virement">🏦 Virement</option>
+        <option value="Autre">➕ Autre</option>
     </select>
+    <div style="font-size:11px;color:#64748b;margin-bottom:5px">Apple Pay / Google Pay : à choisir quand le client règle avec son téléphone sur votre terminal. L'application enregistre le mode de paiement, elle ne traite pas le paiement.</div>
 
     <button class="btn-blue" onclick="encaisser()">🔒 Encaisser et Clôturer</button>
 </div>
@@ -145,7 +162,7 @@
 <script>
     // ---------- État ----------
     let stocks = [], ventes = [], panier = [];
-    let profil = { name: "", siret: "" };
+    let profil = profilVide();
     let compteur = 0;            // dernier numéro de facture attribué (jamais remis à zéro)
     let isLibre = false;
 
@@ -153,15 +170,17 @@
     function loadAll() {
         try { stocks = JSON.parse(localStorage.getItem('stk_data')) || []; } catch(e) { stocks = []; }
         try { ventes = JSON.parse(localStorage.getItem('vnt_data')) || []; } catch(e) { ventes = []; }
-        try { profil = JSON.parse(localStorage.getItem('prf_data')) || { name: "", siret: "" }; } catch(e) { profil = { name: "", siret: "" }; }
+        try { profil = Object.assign(profilVide(), JSON.parse(localStorage.getItem('prf_data')) || {}); } catch(e) { profil = profilVide(); }
         try { compteur = parseInt(localStorage.getItem('cpt_data')) || 0; } catch(e) { compteur = 0; }
     }
     function saveStocks() { try { localStorage.setItem('stk_data', JSON.stringify(stocks)); } catch(e){ console.warn(e); } }
     function saveVentes() { try { localStorage.setItem('vnt_data', JSON.stringify(ventes)); } catch(e){ console.warn(e); } }
     function saveCompteur() { try { localStorage.setItem('cpt_data', String(compteur)); } catch(e){ console.warn(e); } }
+    function profilVide() { return { name: "", siret: "", address: "", email: "", phone: "", mention: "" }; }
     function saveProfil() {
-        profil.name = document.getElementById('ent-name').value;
-        profil.siret = document.getElementById('ent-siret').value;
+        const v = id => document.getElementById(id).value;
+        profil.name = v('ent-name'); profil.siret = v('ent-siret'); profil.address = v('ent-address');
+        profil.email = v('ent-email'); profil.phone = v('ent-phone'); profil.mention = v('ent-mention');
         try { localStorage.setItem('prf_data', JSON.stringify(profil)); } catch(e){}
     }
 
@@ -169,6 +188,12 @@
     function fmt(n) { return Number(n).toFixed(2) + ' €'; }
     function esc(s) {
         return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    function lignesEntreprise(p) {
+        return [p.address && esc(p.address), p.siret && ('SIRET : ' + esc(p.siret)),
+                p.phone && ('Tél : ' + esc(p.phone)), p.email && esc(p.email)]
+            .filter(Boolean).map(l => '<div>' + l + '</div>').join('');
     }
 
     // ---------- Confirmation fiable (Android natif si dispo) ----------
@@ -311,7 +336,7 @@
             tva: t.tva,
             total: t.ttc,
             payment: payMode,
-            profil: { name: profil.name, siret: profil.siret },
+            profil: Object.assign({}, profil),
             items: panier.map(i => ({ name: i.name, qty: i.qty, price: i.price, tva: i.tva }))
         };
 
@@ -387,7 +412,7 @@
                 if (!ok) return;
                 stocks = d.stocks;
                 ventes = d.ventes;
-                profil = d.profil && typeof d.profil === 'object' ? d.profil : { name: "", siret: "" };
+                profil = Object.assign(profilVide(), (d.profil && typeof d.profil === 'object') ? d.profil : {});
                 // On garde le plus grand compteur pour ne jamais réutiliser un numéro déjà émis
                 compteur = Math.max(compteur, parseInt(d.compteur) || 0);
                 panier = [];
@@ -424,7 +449,7 @@
                     "Vraiment sûr ? Faites une sauvegarde avant.",
                     "Confirmer", "Annuler", (ok2) => {
                         if (!ok2) return;
-                        stocks = []; ventes = []; panier = []; profil = { name: "", siret: "" };
+                        stocks = []; ventes = []; panier = []; profil = profilVide();
                         try {
                             localStorage.removeItem('stk_data');
                             localStorage.removeItem('vnt_data');
@@ -470,7 +495,7 @@
         </style></head><body>
         <div class="hdr">
             <div><h1>${esc(v.profil.name || "Mon Établissement")}</h1>
-                <div>SIRET : ${esc(v.profil.siret || "—")}</div></div>
+                ${lignesEntreprise(v.profil)}</div>
             <div class="right"><h1>Facture ${esc(v.id)}</h1>
                 <div>${esc(v.date)}</div>
                 <div>Paiement : ${esc(v.payment)}</div></div>
@@ -488,7 +513,7 @@
             <div>Total TVA : ${fmt(v.tva)}</div>
             <div class="ttc">TOTAL TTC : ${fmt(v.total)}</div>
         </div>
-        <div class="footer">Facture générée par Ma Compta</div>
+        <div class="footer">${v.profil.mention ? esc(v.profil.mention) : "Facture générée par Ma Compta"}</div>
         </body></html>`;
     }
 
@@ -503,10 +528,93 @@
         AndroidBridge.exportPdfAndShare(buildFactureHtml(v), "Facture_" + v.id + ".pdf");
     }
 
+    // ---------- Bilan de la journée ----------
+    function jourLocal(ts) {
+        const d = new Date(ts);
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function calculerBilan(iso) {
+        const L = ventes.filter(v => v.dateTs && jourLocal(v.dateTs) === iso).sort((a, b) => a.dateTs - b.dateTs);
+        const tot = { ht: 0, tva: 0, ttc: 0 }, parMode = {}, parTaux = {};
+        L.forEach(v => {
+            tot.ht += v.ht; tot.tva += v.tva; tot.ttc += v.total;
+            const m = parMode[v.payment] = parMode[v.payment] || { n: 0, ttc: 0 };
+            m.n++; m.ttc += v.total;
+            (v.items || []).forEach(i => {
+                const ttc = i.price * i.qty, ht = ttc / (1 + i.tva / 100);
+                const t = parTaux[String(i.tva)] = parTaux[String(i.tva)] || { ht: 0, tva: 0 };
+                t.ht += ht; t.tva += ttc - ht;
+            });
+        });
+        return { L, tot, parMode, parTaux };
+    }
+
+    function renderBilanApercu() {
+        const el = document.getElementById('bil-apercu'), inp = document.getElementById('bil-date');
+        if (!el || !inp) return;
+        const b = calculerBilan(inp.value || jourLocal(Date.now()));
+        if (!b.L.length) { el.innerHTML = '<div class="empty">Aucune vente à cette date</div>'; return; }
+        el.innerHTML = '<div class="item-row"><span><strong>' + b.L.length + ' facture(s)</strong></span><strong>' + fmt(b.tot.ttc) + '</strong></div>' +
+            Object.keys(b.parMode).map(m => '<div class="item-row"><small>' + esc(m) + ' (' + b.parMode[m].n + ')</small><span>' + fmt(b.parMode[m].ttc) + '</span></div>').join('');
+    }
+
+    function buildBilanHtml(iso) {
+        const b = calculerBilan(iso);
+        const jour = new Date(iso + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        const modes = Object.keys(b.parMode).map(m => `<tr><td>${esc(m)}</td><td style="text-align:center">${b.parMode[m].n}</td><td style="text-align:right">${fmt(b.parMode[m].ttc)}</td></tr>`).join('');
+        const taux = Object.keys(b.parTaux).sort((a, c) => parseFloat(a) - parseFloat(c)).map(k => `<tr><td>${esc(k)} %</td><td style="text-align:right">${fmt(b.parTaux[k].ht)}</td><td style="text-align:right">${fmt(b.parTaux[k].tva)}</td></tr>`).join('');
+        const lignes = b.L.map(v => `<tr><td>${esc(v.id)}</td><td>${esc(new Date(v.dateTs).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))}</td><td>${esc(v.payment)}</td><td style="text-align:right">${fmt(v.total)}</td></tr>`).join('');
+        return `<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <style>
+            body{font-family:sans-serif;padding:20px;font-size:12px;color:#1e293b}
+            h1{font-size:20px;margin-bottom:4px}
+            h3{font-size:13px;margin:18px 0 4px 0;color:#2563eb}
+            .hdr{display:flex;justify-content:space-between;border-bottom:2px solid #2563eb;padding-bottom:10px;margin-bottom:10px}
+            .hdr .right{text-align:right}
+            table{width:100%;border-collapse:collapse}
+            th{background:#f1f5f9;padding:6px;text-align:left;font-size:11px;border-bottom:1px solid #cbd5e1}
+            td{padding:6px;border-bottom:1px solid #e2e8f0}
+            .ttc{font-weight:bold;font-size:15px;color:#166534;margin-top:10px;text-align:right}
+            .footer{margin-top:30px;font-size:10px;color:#94a3b8;text-align:center}
+        </style></head><body>
+        <div class="hdr">
+            <div><h1>${esc(profil.name || "Mon Établissement")}</h1>${lignesEntreprise(profil)}</div>
+            <div class="right"><h1>Bilan de la journée</h1><div>${esc(jour)}</div>
+                <div>Édité le ${esc(new Date().toLocaleString('fr-FR'))}</div></div>
+        </div>
+        <div>${b.L.length} facture(s) : du ${esc(b.L[0].id)} au ${esc(b.L[b.L.length - 1].id)}</div>
+        <div>Total HT : ${fmt(b.tot.ht)} — Total TVA : ${fmt(b.tot.tva)}</div>
+        <div class="ttc">TOTAL TTC : ${fmt(b.tot.ttc)}</div>
+        <h3>TVA par taux</h3>
+        <table><thead><tr><th>Taux</th><th style="text-align:right">Base HT</th><th style="text-align:right">TVA</th></tr></thead><tbody>${taux}</tbody></table>
+        <h3>Par mode de paiement</h3>
+        <table><thead><tr><th>Mode</th><th style="text-align:center">Nb</th><th style="text-align:right">Total TTC</th></tr></thead><tbody>${modes}</tbody></table>
+        <h3>Détail des factures</h3>
+        <table><thead><tr><th>N°</th><th>Heure</th><th>Paiement</th><th style="text-align:right">TTC</th></tr></thead><tbody>${lignes}</tbody></table>
+        <div class="footer">Document de gestion établi par Ma Compta : il ne constitue pas une clôture de caisse certifiée.</div>
+        </body></html>`;
+    }
+
+    function editerBilan() {
+        const inp = document.getElementById('bil-date');
+        const iso = (inp && inp.value) || jourLocal(Date.now());
+        if (!calculerBilan(iso).L.length) { alert("Aucune vente enregistrée à cette date."); return; }
+        if (!window.AndroidBridge || !AndroidBridge.exportPdfAndShare) {
+            alert("Export PDF disponible uniquement dans l'application Android.");
+            return;
+        }
+        AndroidBridge.exportPdfAndShare(buildBilanHtml(iso), "Bilan_" + iso + ".pdf");
+    }
+
     // ---------- Rendu ----------
     function render() {
         document.getElementById('ent-name').value = profil.name || "";
         document.getElementById('ent-siret').value = profil.siret || "";
+        document.getElementById('ent-address').value = profil.address || "";
+        document.getElementById('ent-email').value = profil.email || "";
+        document.getElementById('ent-phone').value = profil.phone || "";
+        document.getElementById('ent-mention').value = profil.mention || "";
 
         // CA du jour
         const today = new Date().toLocaleDateString('fr-FR');
@@ -517,6 +625,7 @@
         document.getElementById('txt-ca').textContent = fmt(ca);
 
         renderBackupStatus();
+        renderBilanApercu();
 
         // Sélecteur produits
         const sel = document.getElementById('sel-product');
@@ -581,6 +690,7 @@
 
     // ---------- Boot ----------
     loadAll();
+    document.getElementById('bil-date').value = jourLocal(Date.now());
     render();
 </script>
 </body>
