@@ -50,13 +50,31 @@
     <input type="tel" id="ent-phone" oninput="saveProfil()">
     <label>Mention de bas de facture (optionnel)</label>
     <input type="text" id="ent-mention" placeholder="Ex : mention propre à votre régime de TVA" oninput="saveProfil()">
+    <label>Clé d'affiliation SumUp (optionnel)</label>
+    <input type="text" id="cfg-sumup" placeholder="Créée sur me.sumup.com/developers" oninput="saveConfig()">
+    <div style="font-size:11px;color:#64748b">Identifiant d'application à déclarer chez SumUp : com.monentreprise.macompta</div>
 </div>
 
 <div class="box" style="background: #f0fdf4;">
     <h2>📈 Bilan du Jour (TTC)</h2>
     <div style="font-size: 24px; font-weight: bold; color: #166534;" id="txt-ca">0.00 €</div>
-    <label>Éditer le bilan d'une date</label>
-    <input type="date" id="bil-date" onchange="renderBilanApercu()">
+    <label>Période du bilan</label>
+    <select id="bil-preset" onchange="appliquerPreset()">
+        <option value="today">Aujourd'hui</option>
+        <option value="yesterday">Hier</option>
+        <option value="week">Cette semaine</option>
+        <option value="month">Ce mois</option>
+        <option value="lastmonth">Mois dernier</option>
+        <option value="3m">3 derniers mois</option>
+        <option value="6m">6 derniers mois</option>
+        <option value="year">Cette année</option>
+        <option value="custom">Personnalisée</option>
+    </select>
+    <div class="grid">
+        <div><label>Du</label><input type="date" id="bil-from" onchange="plagePerso()"></div>
+        <div><label>Au</label><input type="date" id="bil-to" onchange="plagePerso()"></div>
+    </div>
+    <label style="display:flex;gap:6px;align-items:center;font-weight:normal"><input type="checkbox" id="bil-detail" checked style="width:auto;margin:0"> Inclure le détail des factures</label>
     <div id="bil-apercu"></div>
     <button class="btn-dark" onclick="editerBilan()">📄 Éditer le bilan (PDF)</button>
 </div>
@@ -67,6 +85,15 @@
     <div class="grid">
         <button class="btn-green" onclick="sauvegarder()">💾 Sauvegarder</button>
         <button class="btn-gray" onclick="restaurer()">📥 Restaurer</button>
+    </div>
+</div>
+
+<div class="box hidden" id="box-pending" style="background:#fffbeb;border-color:#f59e0b">
+    <h2>⏳ Paiement SumUp en attente</h2>
+    <div id="pending-txt" style="font-size:13px;margin-bottom:6px"></div>
+    <div class="grid">
+        <button class="btn-green" onclick="validerPending()">✅ Payé : clôturer</button>
+        <button class="btn-danger" onclick="abandonnerPending()">❌ Abandonner</button>
     </div>
 </div>
 
@@ -124,7 +151,7 @@
         <option value="Virement">🏦 Virement</option>
         <option value="Autre">➕ Autre</option>
     </select>
-    <div style="font-size:11px;color:#64748b;margin-bottom:5px">Apple Pay / Google Pay : à choisir quand le client règle avec son téléphone sur votre terminal. L'application enregistre le mode de paiement, elle ne traite pas le paiement.</div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:5px">Carte (SumUp) : ouvre l'application SumUp pour encaisser (clé à renseigner en haut). Apple Pay, Google Pay, Virement, Autre : enregistrent seulement le mode de paiement.</div>
 
     <button class="btn-blue" onclick="encaisser()">🔒 Encaisser et Clôturer</button>
 </div>
@@ -165,6 +192,7 @@
     let profil = profilVide();
     let compteur = 0;            // dernier numéro de facture attribué (jamais remis à zéro)
     let isLibre = false;
+    let config = { sumupKey: "" };
 
     // ---------- Persistance ----------
     function loadAll() {
@@ -172,10 +200,15 @@
         try { ventes = JSON.parse(localStorage.getItem('vnt_data')) || []; } catch(e) { ventes = []; }
         try { profil = Object.assign(profilVide(), JSON.parse(localStorage.getItem('prf_data')) || {}); } catch(e) { profil = profilVide(); }
         try { compteur = parseInt(localStorage.getItem('cpt_data')) || 0; } catch(e) { compteur = 0; }
+        try { config = Object.assign({ sumupKey: "" }, JSON.parse(localStorage.getItem('cfg_data')) || {}); } catch(e) { config = { sumupKey: "" }; }
     }
     function saveStocks() { try { localStorage.setItem('stk_data', JSON.stringify(stocks)); } catch(e){ console.warn(e); } }
     function saveVentes() { try { localStorage.setItem('vnt_data', JSON.stringify(ventes)); } catch(e){ console.warn(e); } }
     function saveCompteur() { try { localStorage.setItem('cpt_data', String(compteur)); } catch(e){ console.warn(e); } }
+    function saveConfig() {
+        config.sumupKey = document.getElementById('cfg-sumup').value.trim();
+        try { localStorage.setItem('cfg_data', JSON.stringify(config)); } catch(e){}
+    }
     function profilVide() { return { name: "", siret: "", address: "", email: "", phone: "", mention: "" }; }
     function saveProfil() {
         const v = id => document.getElementById(id).value;
@@ -313,17 +346,24 @@
     // ---------- Encaissement ----------
     function encaisser() {
         if (panier.length === 0) { alert("Votre panier est vide."); return; }
-
         const payMode = document.getElementById('sel-pay').value;
+        if (payMode === "Carte (SumUp)" && window.AndroidBridge && AndroidBridge.sumupPay && config.sumupKey) {
+            lancerSumup();
+            return;
+        }
+        cloturer(payMode, panier, null);
+    }
 
-        panier.forEach(item => {
+    // Crée la facture. `lignes` = articles vendus ; `extra` = infos SumUp éventuelles.
+    function cloturer(payMode, lignes, extra) {
+        lignes.forEach(item => {
             if (item.pId !== "MANUEL") {
                 const idx = stocks.findIndex(p => p.id === item.pId);
                 if (idx !== -1) stocks[idx].qty -= item.qty;
             }
         });
 
-        const t = computeTotaux(panier);
+        const t = computeTotaux(lignes);
         const num = prochainNumero();
         compteur = num;
         const fRef = "FA-" + String(num).padStart(6, "0");
@@ -337,11 +377,12 @@
             total: t.ttc,
             payment: payMode,
             profil: Object.assign({}, profil),
-            items: panier.map(i => ({ name: i.name, qty: i.qty, price: i.price, tva: i.tva }))
+            items: lignes.map(i => ({ name: i.name, qty: i.qty, price: i.price, tva: i.tva }))
         };
+        if (extra) nouvelleVente.sumup = extra;
 
         ventes.push(nouvelleVente);
-        panier = [];
+        if (lignes === panier) panier = [];
         saveVentes();
         saveCompteur();
         saveStocks();
@@ -349,11 +390,80 @@
         alert("Facture " + fRef + " clôturée.\nTTC : " + fmt(t.ttc));
     }
 
+    // ---------- Paiement par l'application SumUp ----------
+    function lirePending() {
+        try { return JSON.parse(localStorage.getItem('sumup_pending')); } catch(e) { return null; }
+    }
+    function effacerPending() {
+        try { localStorage.removeItem('sumup_pending'); } catch(e){}
+        renderPending();
+    }
+    function renderPending() {
+        const box = document.getElementById('box-pending'), p = lirePending();
+        if (!box) return;
+        box.className = p ? "box" : "box hidden";
+        if (p) document.getElementById('pending-txt').textContent =
+            fmt(p.total) + " — lancé le " + new Date(p.ts).toLocaleString('fr-FR') +
+            ". Aucune facture n'est créée tant que le paiement n'est pas confirmé.";
+    }
+
+    // La facture n'est créée (et son numéro attribué) qu'après confirmation du paiement.
+    function lancerSumup() {
+        if (lirePending()) { alert("Un paiement SumUp est déjà en attente : validez-le ou abandonnez-le d'abord."); return; }
+        const t = computeTotaux(panier);
+        const total = t.ttc.toFixed(2);
+        const pending = {
+            ts: Date.now(), total: total,
+            lignes: panier.map(i => ({ pId: i.pId, name: i.name, qty: i.qty, price: i.price, tva: i.tva, total: i.total }))
+        };
+        try { localStorage.setItem('sumup_pending', JSON.stringify(pending)); }
+        catch(e) { alert("Impossible de préparer le paiement."); return; }
+        renderPending();
+        AndroidBridge.sumupPay(config.sumupKey, total, "Ma Compta");
+    }
+
+    function finaliserPending(extra) {
+        const p = lirePending();
+        if (!p) return;
+        effacerPending();
+        cloturer("Carte (SumUp)", p.lignes, extra);
+    }
+
+    function traiterRetourSumup(q) {
+        if (!q) return;
+        const p = lirePending();
+        if (!p) { if (window.AndroidBridge && AndroidBridge.toast) AndroidBridge.toast("Retour SumUp ignoré : aucun paiement en attente"); return; }
+        const params = new URLSearchParams(q);
+        const statut = (params.get('smp-status') || '').toLowerCase();
+        if (statut === 'success') {
+            finaliserPending({ tx: params.get('smp-tx-code') || "" });
+        } else if (statut) {
+            effacerPending();
+            alert("Paiement SumUp non abouti (" + (params.get('smp-failure-cause') || params.get('smp-message') || statut) + ").\nAucune facture n'a été créée.");
+        } else {
+            alert("Réponse SumUp inattendue. Vérifiez dans l'application SumUp, puis validez ou abandonnez le paiement en attente.");
+        }
+    }
+    window.__onSumupResult = traiterRetourSumup;
+    window.__onSumupError = function(code) {
+        effacerPending();
+        alert(code === 'noapp' ? "L'application SumUp est introuvable sur ce téléphone." : "Paramètres de paiement invalides.");
+    };
+
+    function validerPending() {
+        const p = lirePending(); if (!p) return;
+        askConfirm("Paiement reçu ?", "Confirmez-vous avoir encaissé " + fmt(p.total) + " dans l'application SumUp ?\nVérifiez-le dans SumUp avant de valider.",
+            "Oui, clôturer", "Non", ok => { if (ok) finaliserPending({ tx: "", manuel: true }); });
+    }
+    function abandonnerPending() {
+        askConfirm("Abandonner ?", "Aucune facture ne sera créée pour ce paiement.", "Abandonner", "Retour", ok => { if (ok) effacerPending(); });
+    }
+
     // ---------- Sauvegarde / Restauration ----------
     function buildBackup() {
         return JSON.stringify({
             app: "MaCompta", version: 1, date: new Date().toISOString(),
-            compteur: compteur, profil: profil, stocks: stocks, ventes: ventes
+            compteur: compteur, config: config, profil: profil, stocks: stocks, ventes: ventes
         }, null, 1);
     }
 
@@ -416,6 +526,7 @@
                 // On garde le plus grand compteur pour ne jamais réutiliser un numéro déjà émis
                 compteur = Math.max(compteur, parseInt(d.compteur) || 0);
                 panier = [];
+                if (d.config && typeof d.config === 'object') { config = Object.assign({ sumupKey: "" }, d.config); saveConfig(); }
                 saveStocks(); saveVentes(); saveCompteur();
                 try { localStorage.setItem('prf_data', JSON.stringify(profil)); } catch(e){}
                 marquerSauvegarde();
@@ -454,6 +565,7 @@
                             localStorage.removeItem('stk_data');
                             localStorage.removeItem('vnt_data');
                             localStorage.removeItem('prf_data');
+                            localStorage.removeItem('sumup_pending');
                             // 'cpt_data' est volontairement conservé (numérotation continue)
                         } catch(e){}
                         document.getElementById('ent-name').value = "";
@@ -498,7 +610,7 @@
                 ${lignesEntreprise(v.profil)}</div>
             <div class="right"><h1>Facture ${esc(v.id)}</h1>
                 <div>${esc(v.date)}</div>
-                <div>Paiement : ${esc(v.payment)}</div></div>
+                <div>Paiement : ${esc(v.payment)}</div>${v.sumup && v.sumup.tx ? '<div>Réf. SumUp : ' + esc(v.sumup.tx) + '</div>' : ''}</div>
         </div>
         <table>
             <thead><tr>
@@ -534,37 +646,81 @@
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
 
-    function calculerBilan(iso) {
-        const L = ventes.filter(v => v.dateTs && jourLocal(v.dateTs) === iso).sort((a, b) => a.dateTs - b.dateTs);
-        const tot = { ht: 0, tva: 0, ttc: 0 }, parMode = {}, parTaux = {};
+    function fmtJour(iso) { return new Date(iso + 'T12:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
+
+    function plage(preset) {
+        const now = new Date(), y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+        const iso = dt => jourLocal(dt.getTime());
+        const moisAvant = n => {
+            const t = new Date(y, m - n, 1), dernier = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate();
+            return new Date(t.getFullYear(), t.getMonth(), Math.min(d, dernier));
+        };
+        switch (preset) {
+            case 'yesterday': { const t = new Date(y, m, d - 1); return [iso(t), iso(t)]; }
+            case 'week': return [iso(new Date(y, m, d - ((now.getDay() + 6) % 7))), iso(now)];
+            case 'month': return [iso(new Date(y, m, 1)), iso(now)];
+            case 'lastmonth': return [iso(new Date(y, m - 1, 1)), iso(new Date(y, m, 0))];
+            case '3m': return [iso(moisAvant(3)), iso(now)];
+            case '6m': return [iso(moisAvant(6)), iso(now)];
+            case 'year': return [iso(new Date(y, 0, 1)), iso(now)];
+            default: return [iso(now), iso(now)];
+        }
+    }
+    function appliquerPreset() {
+        const p = document.getElementById('bil-preset').value;
+        if (p !== 'custom') {
+            const r = plage(p);
+            document.getElementById('bil-from').value = r[0];
+            document.getElementById('bil-to').value = r[1];
+        }
+        renderBilanApercu();
+    }
+    function plagePerso() { document.getElementById('bil-preset').value = 'custom'; renderBilanApercu(); }
+    function lirePlage() {
+        let a = document.getElementById('bil-from').value || jourLocal(Date.now());
+        let b = document.getElementById('bil-to').value || a;
+        if (a > b) { const t = a; a = b; b = t; }
+        return [a, b];
+    }
+
+    function calculerBilan(a, b) {
+        const L = ventes.filter(v => v.dateTs && jourLocal(v.dateTs) >= a && jourLocal(v.dateTs) <= b).sort((x, y) => x.dateTs - y.dateTs);
+        const tot = { ht: 0, tva: 0, ttc: 0 }, parMode = {}, parTaux = {}, parJour = {};
         L.forEach(v => {
             tot.ht += v.ht; tot.tva += v.tva; tot.ttc += v.total;
             const m = parMode[v.payment] = parMode[v.payment] || { n: 0, ttc: 0 };
             m.n++; m.ttc += v.total;
+            const j = parJour[jourLocal(v.dateTs)] = parJour[jourLocal(v.dateTs)] || { n: 0, ttc: 0 };
+            j.n++; j.ttc += v.total;
             (v.items || []).forEach(i => {
                 const ttc = i.price * i.qty, ht = ttc / (1 + i.tva / 100);
                 const t = parTaux[String(i.tva)] = parTaux[String(i.tva)] || { ht: 0, tva: 0 };
                 t.ht += ht; t.tva += ttc - ht;
             });
         });
-        return { L, tot, parMode, parTaux };
+        return { L, tot, parMode, parTaux, parJour };
     }
 
     function renderBilanApercu() {
-        const el = document.getElementById('bil-apercu'), inp = document.getElementById('bil-date');
-        if (!el || !inp) return;
-        const b = calculerBilan(inp.value || jourLocal(Date.now()));
-        if (!b.L.length) { el.innerHTML = '<div class="empty">Aucune vente à cette date</div>'; return; }
+        const el = document.getElementById('bil-apercu');
+        if (!el || !document.getElementById('bil-from')) return;
+        const r = lirePlage(), b = calculerBilan(r[0], r[1]);
+        if (!b.L.length) { el.innerHTML = '<div class="empty">Aucune vente sur cette période</div>'; return; }
         el.innerHTML = '<div class="item-row"><span><strong>' + b.L.length + ' facture(s)</strong></span><strong>' + fmt(b.tot.ttc) + '</strong></div>' +
             Object.keys(b.parMode).map(m => '<div class="item-row"><small>' + esc(m) + ' (' + b.parMode[m].n + ')</small><span>' + fmt(b.parMode[m].ttc) + '</span></div>').join('');
     }
 
-    function buildBilanHtml(iso) {
-        const b = calculerBilan(iso);
-        const jour = new Date(iso + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-        const modes = Object.keys(b.parMode).map(m => `<tr><td>${esc(m)}</td><td style="text-align:center">${b.parMode[m].n}</td><td style="text-align:right">${fmt(b.parMode[m].ttc)}</td></tr>`).join('');
-        const taux = Object.keys(b.parTaux).sort((a, c) => parseFloat(a) - parseFloat(c)).map(k => `<tr><td>${esc(k)} %</td><td style="text-align:right">${fmt(b.parTaux[k].ht)}</td><td style="text-align:right">${fmt(b.parTaux[k].tva)}</td></tr>`).join('');
-        const lignes = b.L.map(v => `<tr><td>${esc(v.id)}</td><td>${esc(new Date(v.dateTs).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))}</td><td>${esc(v.payment)}</td><td style="text-align:right">${fmt(v.total)}</td></tr>`).join('');
+    function buildBilanHtml(a, b, detail) {
+        const B = calculerBilan(a, b), unJour = a === b;
+        const titre = unJour ? "Bilan de la journée" : "Bilan de période";
+        const periode = unJour ? new Date(a + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+                               : "du " + fmtJour(a) + " au " + fmtJour(b);
+        const modes = Object.keys(B.parMode).map(m => `<tr><td>${esc(m)}</td><td style="text-align:center">${B.parMode[m].n}</td><td style="text-align:right">${fmt(B.parMode[m].ttc)}</td></tr>`).join('');
+        const taux = Object.keys(B.parTaux).sort((x, y) => parseFloat(x) - parseFloat(y)).map(k => `<tr><td>${esc(k)} %</td><td style="text-align:right">${fmt(B.parTaux[k].ht)}</td><td style="text-align:right">${fmt(B.parTaux[k].tva)}</td></tr>`).join('');
+        const jours = unJour ? "" : `<h3>Par jour</h3><table><thead><tr><th>Date</th><th style="text-align:center">Factures</th><th style="text-align:right">Total TTC</th></tr></thead><tbody>${
+            Object.keys(B.parJour).sort().map(k => `<tr><td>${esc(fmtJour(k))}</td><td style="text-align:center">${B.parJour[k].n}</td><td style="text-align:right">${fmt(B.parJour[k].ttc)}</td></tr>`).join('')}</tbody></table>`;
+        const lignes = !detail ? "" : `<h3>Détail des factures</h3><table><thead><tr><th>N°</th><th>Date</th><th>Paiement</th><th style="text-align:right">TTC</th></tr></thead><tbody>${
+            B.L.map(v => `<tr><td>${esc(v.id)}</td><td>${esc(new Date(v.dateTs).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }))}</td><td>${esc(v.payment)}</td><td style="text-align:right">${fmt(v.total)}</td></tr>`).join('')}</tbody></table>`;
         return `<!DOCTYPE html><html><head><meta charset="UTF-8">
         <style>
             body{font-family:sans-serif;padding:20px;font-size:12px;color:#1e293b}
@@ -580,31 +736,30 @@
         </style></head><body>
         <div class="hdr">
             <div><h1>${esc(profil.name || "Mon Établissement")}</h1>${lignesEntreprise(profil)}</div>
-            <div class="right"><h1>Bilan de la journée</h1><div>${esc(jour)}</div>
+            <div class="right"><h1>${titre}</h1><div>${esc(periode)}</div>
                 <div>Édité le ${esc(new Date().toLocaleString('fr-FR'))}</div></div>
         </div>
-        <div>${b.L.length} facture(s) : du ${esc(b.L[0].id)} au ${esc(b.L[b.L.length - 1].id)}</div>
-        <div>Total HT : ${fmt(b.tot.ht)} — Total TVA : ${fmt(b.tot.tva)}</div>
-        <div class="ttc">TOTAL TTC : ${fmt(b.tot.ttc)}</div>
+        <div>${B.L.length} facture(s) : du ${esc(B.L[0].id)} au ${esc(B.L[B.L.length - 1].id)}</div>
+        <div>Total HT : ${fmt(B.tot.ht)} — Total TVA : ${fmt(B.tot.tva)}</div>
+        <div class="ttc">TOTAL TTC : ${fmt(B.tot.ttc)}</div>
         <h3>TVA par taux</h3>
         <table><thead><tr><th>Taux</th><th style="text-align:right">Base HT</th><th style="text-align:right">TVA</th></tr></thead><tbody>${taux}</tbody></table>
         <h3>Par mode de paiement</h3>
         <table><thead><tr><th>Mode</th><th style="text-align:center">Nb</th><th style="text-align:right">Total TTC</th></tr></thead><tbody>${modes}</tbody></table>
-        <h3>Détail des factures</h3>
-        <table><thead><tr><th>N°</th><th>Heure</th><th>Paiement</th><th style="text-align:right">TTC</th></tr></thead><tbody>${lignes}</tbody></table>
+        ${jours}${lignes}
         <div class="footer">Document de gestion établi par Ma Compta : il ne constitue pas une clôture de caisse certifiée.</div>
         </body></html>`;
     }
 
     function editerBilan() {
-        const inp = document.getElementById('bil-date');
-        const iso = (inp && inp.value) || jourLocal(Date.now());
-        if (!calculerBilan(iso).L.length) { alert("Aucune vente enregistrée à cette date."); return; }
+        const r = lirePlage(), a = r[0], b = r[1];
+        if (!calculerBilan(a, b).L.length) { alert("Aucune vente enregistrée sur cette période."); return; }
         if (!window.AndroidBridge || !AndroidBridge.exportPdfAndShare) {
             alert("Export PDF disponible uniquement dans l'application Android.");
             return;
         }
-        AndroidBridge.exportPdfAndShare(buildBilanHtml(iso), "Bilan_" + iso + ".pdf");
+        const detail = document.getElementById('bil-detail').checked !== false;
+        AndroidBridge.exportPdfAndShare(buildBilanHtml(a, b, detail), "Bilan_" + (a === b ? a : a + "_au_" + b) + ".pdf");
     }
 
     // ---------- Rendu ----------
@@ -626,6 +781,8 @@
 
         renderBackupStatus();
         renderBilanApercu();
+        renderPending();
+        document.getElementById('cfg-sumup').value = config.sumupKey || "";
 
         // Sélecteur produits
         const sel = document.getElementById('sel-product');
@@ -690,8 +847,13 @@
 
     // ---------- Boot ----------
     loadAll();
-    document.getElementById('bil-date').value = jourLocal(Date.now());
+    document.getElementById('bil-preset').value = 'today';
+    appliquerPreset();
     render();
+    if (window.AndroidBridge && AndroidBridge.consumeSumupResult) {
+        const q = AndroidBridge.consumeSumupResult();
+        if (q) traiterRetourSumup(q);
+    }
 </script>
 </body>
 </html>
