@@ -1,8 +1,10 @@
 package com.monentreprise.macompta;
 
 import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private WebView printView;      // WebView temporaire pour générer les PDF
     private String pendingBackup;   // contenu en attente d'écriture (sauvegarde)
+    private String sumupResult;     // paramètres de retour de l'application SumUp
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -97,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
 
         webView.loadUrl("file:///android_asset/index.html");
         setContentView(webView);
+        handleSumupIntent(getIntent());
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -121,6 +125,25 @@ public class MainActivity extends AppCompatActivity {
     /** Exécute du JavaScript dans la page, depuis n'importe quel thread. */
     private void js(final String code) {
         runOnUiThread(() -> { if (webView != null) webView.evaluateJavascript(code, null); });
+    }
+
+    /** Mémorise le retour de l'application SumUp (macompta://sumup-callback?...). */
+    private void handleSumupIntent(Intent i) {
+        if (i == null) return;
+        Uri u = i.getData();
+        if (u != null && "macompta".equals(u.getScheme()) && "sumup-callback".equals(u.getHost())) {
+            String q = u.getEncodedQuery();
+            sumupResult = (q == null || q.isEmpty()) ? "empty=1" : q;
+            i.setData(null); // évite de retraiter le même retour
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleSumupIntent(intent);
+        js("(function(){try{if(window.__onSumupResult){var q=AndroidBridge.consumeSumupResult();if(q)window.__onSumupResult(q);}}catch(e){}})()");
     }
 
     /** Ouvre la boîte d'impression Android (« Enregistrer au format PDF », partage, imprimante). */
@@ -187,6 +210,39 @@ public class MainActivity extends AppCompatActivity {
     public class Bridge {
         @JavascriptInterface
         public String getPlatform() { return "android"; }
+
+        /** Rend (une seule fois) le retour SumUp en attente, ou une chaîne vide. */
+        @JavascriptInterface
+        public String consumeSumupResult() {
+            String r = sumupResult;
+            sumupResult = null;
+            return r == null ? "" : r;
+        }
+
+        /** Lance un encaissement dans l'application SumUp (Payment Switch). */
+        @JavascriptInterface
+        public void sumupPay(final String key, final String total, final String title) {
+            if (key == null || key.trim().isEmpty() || total == null || !total.matches("\\d{1,7}(\\.\\d{1,2})?")) {
+                js("window.__onSumupError('param')");
+                return;
+            }
+            runOnUiThread(() -> {
+                Uri uri = new Uri.Builder()
+                        .scheme("sumupmerchant").authority("pay").appendPath("1.0")
+                        .appendQueryParameter("affiliate-key", key.trim())
+                        .appendQueryParameter("app-id", getPackageName())
+                        .appendQueryParameter("total", total)
+                        .appendQueryParameter("currency", "EUR")
+                        .appendQueryParameter("title", title == null ? "" : title)
+                        .appendQueryParameter("callback", "macompta://sumup-callback")
+                        .build();
+                try {
+                    startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                } catch (ActivityNotFoundException e) {
+                    js("window.__onSumupError('noapp')");
+                }
+            });
+        }
 
         @JavascriptInterface
         public void toast(final String msg) {
