@@ -36,6 +36,8 @@ jobs:
           mkdir -p src/main/res/values
           mkdir -p src/main/res/xml
           cp index.html src/main/assets/index.html
+          echo "=== Contenu de src/main ==="
+          find src/main -type f | sort
 
       - name: 6. Compilation de l'APK
         run: gradle assembleDebug --no-daemon --stacktrace
@@ -46,3 +48,4 @@ jobs:
           name: Ma-Compta-APK
           path: build/outputs/apk/debug/*.apk
           retention-days: 30
+          if-no-files-found: error
