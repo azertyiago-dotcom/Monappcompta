@@ -30,6 +30,8 @@
         .totals { margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 8px; font-size: 13px; }
         .totals > div { display: flex; justify-content: space-between; padding: 2px 0; }
         .totals .ttc { font-weight: bold; font-size: 15px; color: #166534; border-top: 1px solid #cbd5e1; padding-top: 6px; margin-top: 4px; }
+        .bak-status { font-size: 12px; padding: 8px; border-radius: 6px; background: #f1f5f9; color: #475569; margin-bottom: 8px; }
+        .bak-status.alerte { background: #fee2e2; color: #991b1b; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -45,6 +47,15 @@
 <div class="box" style="background: #f0fdf4;">
     <h2>📈 Bilan du Jour (TTC)</h2>
     <div style="font-size: 24px; font-weight: bold; color: #166534;" id="txt-ca">0.00 €</div>
+</div>
+
+<div class="box">
+    <h2>💾 Sauvegarde des données</h2>
+    <div id="bak-status" class="bak-status">...</div>
+    <div class="grid">
+        <button class="btn-green" onclick="sauvegarder()">💾 Sauvegarder</button>
+        <button class="btn-gray" onclick="restaurer()">📥 Restaurer</button>
+    </div>
 </div>
 
 <div class="box">
@@ -135,6 +146,7 @@
     // ---------- État ----------
     let stocks = [], ventes = [], panier = [];
     let profil = { name: "", siret: "" };
+    let compteur = 0;            // dernier numéro de facture attribué (jamais remis à zéro)
     let isLibre = false;
 
     // ---------- Persistance ----------
@@ -142,9 +154,11 @@
         try { stocks = JSON.parse(localStorage.getItem('stk_data')) || []; } catch(e) { stocks = []; }
         try { ventes = JSON.parse(localStorage.getItem('vnt_data')) || []; } catch(e) { ventes = []; }
         try { profil = JSON.parse(localStorage.getItem('prf_data')) || { name: "", siret: "" }; } catch(e) { profil = { name: "", siret: "" }; }
+        try { compteur = parseInt(localStorage.getItem('cpt_data')) || 0; } catch(e) { compteur = 0; }
     }
     function saveStocks() { try { localStorage.setItem('stk_data', JSON.stringify(stocks)); } catch(e){ console.warn(e); } }
     function saveVentes() { try { localStorage.setItem('vnt_data', JSON.stringify(ventes)); } catch(e){ console.warn(e); } }
+    function saveCompteur() { try { localStorage.setItem('cpt_data', String(compteur)); } catch(e){ console.warn(e); } }
     function saveProfil() {
         profil.name = document.getElementById('ent-name').value;
         profil.siret = document.getElementById('ent-siret').value;
@@ -259,6 +273,18 @@
         return { ht, tva, ttc };
     }
 
+    // ---------- Numérotation continue ----------
+    // Format : FA-000001, FA-000002, ... Le compteur n'est jamais remis à zéro,
+    // même après une réinitialisation, pour éviter tout doublon de numéro.
+    function prochainNumero() {
+        let max = compteur;
+        ventes.forEach(v => {
+            const m = /^FA-(\d+)$/.exec(v.id || "");
+            if (m) max = Math.max(max, parseInt(m[1], 10));
+        });
+        return max + 1;
+    }
+
     // ---------- Encaissement ----------
     function encaisser() {
         if (panier.length === 0) { alert("Votre panier est vide."); return; }
@@ -273,9 +299,12 @@
         });
 
         const t = computeTotaux(panier);
-        const fRef = "F-" + Date.now().toString().slice(-6);
+        const num = prochainNumero();
+        compteur = num;
+        const fRef = "FA-" + String(num).padStart(6, "0");
         const nouvelleVente = {
             id: fRef,
+            num: num,
             date: new Date().toLocaleString('fr-FR'),
             dateTs: Date.now(),
             ht: t.ht,
@@ -288,16 +317,107 @@
 
         ventes.push(nouvelleVente);
         panier = [];
-        saveStocks();
         saveVentes();
+        saveCompteur();
+        saveStocks();
         render();
         alert("Facture " + fRef + " clôturée.\nTTC : " + fmt(t.ttc));
+    }
+
+    // ---------- Sauvegarde / Restauration ----------
+    function buildBackup() {
+        return JSON.stringify({
+            app: "MaCompta", version: 1, date: new Date().toISOString(),
+            compteur: compteur, profil: profil, stocks: stocks, ventes: ventes
+        }, null, 1);
+    }
+
+    function marquerSauvegarde() {
+        try { localStorage.setItem('bak_last', String(Date.now())); } catch(e){}
+        renderBackupStatus();
+    }
+
+    function sauvegarder() {
+        const nom = "MaCompta_sauvegarde_" + new Date().toISOString().slice(0, 10) + ".json";
+        const data = buildBackup();
+        if (window.AndroidBridge && AndroidBridge.saveBackup) {
+            AndroidBridge.saveBackup(nom, data);   // résultat : window.__onBackupSaved
+        } else {
+            const a = document.createElement('a');   // test dans un navigateur
+            a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+            a.download = nom;
+            a.click();
+            marquerSauvegarde();
+        }
+    }
+
+    window.__onBackupSaved = function(ok) {
+        if (ok) { marquerSauvegarde(); alert("Sauvegarde enregistrée.\nConservez-la ailleurs que sur ce téléphone (Drive, e-mail, ordinateur)."); }
+        else { alert("Échec de la sauvegarde. Réessayez."); }
+    };
+
+    function restaurer() {
+        if (window.AndroidBridge && AndroidBridge.pickBackup) {
+            AndroidBridge.pickBackup();            // résultat : window.__onBackupLoaded
+        } else {
+            const inp = document.createElement('input');
+            inp.type = 'file'; inp.accept = '.json,application/json';
+            inp.onchange = () => {
+                const f = inp.files[0]; if (!f) return;
+                const r = new FileReader();
+                r.onload = () => window.__onBackupLoaded(String(r.result));
+                r.readAsText(f);
+            };
+            inp.click();
+        }
+    }
+
+    window.__onBackupLoaded = function(text) {
+        let d = null;
+        try { d = text ? JSON.parse(text) : null; } catch(e) { d = null; }
+        if (!d || d.app !== "MaCompta" || !Array.isArray(d.stocks) || !Array.isArray(d.ventes)) {
+            alert("Fichier invalide : ce n'est pas une sauvegarde Ma Compta.");
+            return;
+        }
+        const jour = d.date ? new Date(d.date).toLocaleString('fr-FR') : "date inconnue";
+        askConfirm("Restaurer la sauvegarde ?",
+            "Sauvegarde du " + jour + " : " + d.ventes.length + " facture(s), " + d.stocks.length + " article(s).\n\n" +
+            "Les données actuelles seront REMPLACÉES.",
+            "Restaurer", "Annuler", (ok) => {
+                if (!ok) return;
+                stocks = d.stocks;
+                ventes = d.ventes;
+                profil = d.profil && typeof d.profil === 'object' ? d.profil : { name: "", siret: "" };
+                // On garde le plus grand compteur pour ne jamais réutiliser un numéro déjà émis
+                compteur = Math.max(compteur, parseInt(d.compteur) || 0);
+                panier = [];
+                saveStocks(); saveVentes(); saveCompteur();
+                try { localStorage.setItem('prf_data', JSON.stringify(profil)); } catch(e){}
+                marquerSauvegarde();
+                render();
+                alert("Sauvegarde restaurée.");
+            });
+    };
+
+    function renderBackupStatus() {
+        const el = document.getElementById('bak-status');
+        let last = 0;
+        try { last = parseInt(localStorage.getItem('bak_last')) || 0; } catch(e){}
+        if (!last) {
+            el.textContent = ventes.length ? "⚠️ Aucune sauvegarde effectuée : vos données sont uniquement sur ce téléphone." : "Aucune sauvegarde pour l'instant.";
+            el.className = "bak-status" + (ventes.length ? " alerte" : "");
+            return;
+        }
+        const depuis = ventes.filter(v => (v.dateTs || 0) > last).length;
+        el.textContent = "Dernière sauvegarde : " + new Date(last).toLocaleString('fr-FR') +
+            (depuis ? " — ⚠️ " + depuis + " facture(s) depuis" : " — à jour");
+        el.className = "bak-status" + (depuis ? " alerte" : "");
     }
 
     // ---------- Reset ----------
     function resetAll() {
         askConfirm("Réinitialiser ?",
-            "Supprimer TOUTES les données (stock, ventes, profil) ?\nAction irréversible.",
+            "Supprimer TOUTES les données (stock, ventes, profil) ?\nLe compteur de numérotation des factures est conservé.\nAction irréversible.",
             "Oui, supprimer", "Annuler", (ok) => {
                 if (!ok) return;
                 askConfirm("Confirmation finale",
@@ -309,6 +429,7 @@
                             localStorage.removeItem('stk_data');
                             localStorage.removeItem('vnt_data');
                             localStorage.removeItem('prf_data');
+                            // 'cpt_data' est volontairement conservé (numérotation continue)
                         } catch(e){}
                         document.getElementById('ent-name').value = "";
                         document.getElementById('ent-siret').value = "";
@@ -371,17 +492,15 @@
         </body></html>`;
     }
 
-    function exportPdf(id, share) {
+    function exportPdf(id) {
         const v = ventes.find(x => x.id === id);
         if (!v) { alert("Facture introuvable"); return; }
         if (!window.AndroidBridge || !AndroidBridge.exportPdfAndShare) {
             alert("Export PDF disponible uniquement dans l'application Android.");
             return;
         }
-        const html = buildFactureHtml(v);
-        const fname = "Facture_" + v.id + ".pdf";
-        if (share) AndroidBridge.exportPdfAndShare(html, fname);
-        else AndroidBridge.exportPdfOnly(html, fname);
+        // Ouvre la boîte d'impression Android : « Enregistrer au format PDF », partage ou imprimante
+        AndroidBridge.exportPdfAndShare(buildFactureHtml(v), "Facture_" + v.id + ".pdf");
     }
 
     // ---------- Rendu ----------
@@ -392,18 +511,24 @@
         // CA du jour
         const today = new Date().toLocaleDateString('fr-FR');
         const ca = ventes
-            .filter(v => v.date && v.date.startsWith(today))
+            .filter(v => v.dateTs ? new Date(v.dateTs).toLocaleDateString('fr-FR') === today
+                                  : (v.date && v.date.startsWith(today)))
             .reduce((s, v) => s + v.total, 0);
         document.getElementById('txt-ca').textContent = fmt(ca);
 
+        renderBackupStatus();
+
         // Sélecteur produits
         const sel = document.getElementById('sel-product');
+        const prev = sel.value;
         if (stocks.length === 0) {
             sel.innerHTML = '<option value="">— Aucun article en stock —</option>';
         } else {
             sel.innerHTML = stocks.map(p =>
                 `<option value="${esc(p.id)}">${esc(p.name)} — ${fmt(p.price)} (x${p.qty})</option>`
             ).join('');
+            if (prev && stocks.some(p => p.id === prev)) sel.value = prev;
+            if (!isLibre && !document.getElementById('inp-price').value) selectProd();
         }
 
         // Panier
@@ -436,7 +561,7 @@
                 </div>`).join('');
         }
 
-        // Historique avec boutons PDF / partage
+        // Historique
         const lh = document.getElementById('liste-historique');
         if (ventes.length === 0) {
             lh.innerHTML = '<div class="empty">Aucune facture</div>';
@@ -448,8 +573,7 @@
                         HT ${fmt(v.ht)} / TVA ${fmt(v.tva)}</small></span>
                     <span style="text-align:right">
                         <strong>${fmt(v.total)}</strong><br>
-                        <button class="btn-dark btn-mini" onclick="exportPdf('${esc(v.id)}', false)">📄 PDF</button>
-                        <button class="btn-green btn-mini" onclick="exportPdf('${esc(v.id)}', true)">📤</button>
+                        <button class="btn-dark btn-mini" onclick="exportPdf('${esc(v.id)}')">📄 PDF</button>
                     </span>
                 </div>`).join('');
         }
