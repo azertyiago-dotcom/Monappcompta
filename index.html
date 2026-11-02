@@ -146,12 +146,13 @@
         <option value="Espèces">💵 Espèces</option>
         <option value="Chèque">✍️ Chèque</option>
         <option value="Carte (SumUp)">💳 Carte Bancaire (SumUp)</option>
+        <option value="Carte (Up2pay)">💳 Carte Bancaire (Up2pay)</option>
         <option value="Apple Pay">🍎 Apple Pay</option>
         <option value="Google Pay">🟢 Google Pay</option>
         <option value="Virement">🏦 Virement</option>
         <option value="Autre">➕ Autre</option>
     </select>
-    <div style="font-size:11px;color:#64748b;margin-bottom:5px">Carte (SumUp) : ouvre l'application SumUp pour encaisser (clé à renseigner en haut). Apple Pay, Google Pay, Virement, Autre : enregistrent seulement le mode de paiement.</div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:5px">Carte (SumUp) : ouvre l'application SumUp pour encaisser (clé à renseigner en haut). Carte (Up2pay) : encaissez séparément dans l'application Up2pay, Ma Compta enregistre seulement la vente et le mode de paiement. Apple Pay, Google Pay, Virement, Autre : enregistrent seulement le mode de paiement.</div>
 
     <button class="btn-blue" onclick="encaisser()">🔒 Encaisser et Clôturer</button>
 </div>
@@ -349,6 +350,14 @@
         const payMode = document.getElementById('sel-pay').value;
         if (payMode === "Carte (SumUp)" && window.AndroidBridge && AndroidBridge.sumupPay && config.sumupKey) {
             lancerSumup();
+            return;
+        }
+        if (payMode === "Carte (Up2pay)") {
+            const t = computeTotaux(panier);
+            askConfirm("Confirmer l'encaissement Up2pay ?",
+                "Avez-vous bien encaissé " + fmt(t.ttc) + " dans l'application Up2pay ?\nLa facture sera enregistrée dans Ma Compta.",
+                "Oui, enregistrer", "Annuler",
+                ok => { if (ok) cloturer(payMode, panier, null); });
             return;
         }
         cloturer(payMode, panier, null);
