@@ -17,8 +17,10 @@
         .btn-gray { background: #e2e8f0; color: #1e293b; }
         .btn-danger { background: #fee2e2; color: #991b1b; }
         .btn-green { background: #16a34a; color: white; }
+        .btn-orange { background: #f59e0b; color: white; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
         .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; gap: 8px; }
         .item-row small { color: #64748b; }
         .btn-mini { width: auto; padding: 4px 8px; font-size: 11px; margin: 0 0 0 4px; border-radius: 4px; }
@@ -32,9 +34,37 @@
         .totals .ttc { font-weight: bold; font-size: 15px; color: #166534; border-top: 1px solid #cbd5e1; padding-top: 6px; margin-top: 4px; }
         .bak-status { font-size: 12px; padding: 8px; border-radius: 6px; background: #f1f5f9; color: #475569; margin-bottom: 8px; }
         .bak-status.alerte { background: #fee2e2; color: #991b1b; font-weight: bold; }
+        /* --- Nouveaux styles --- */
+        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .kpi { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; }
+        .kpi .kpi-label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: bold; }
+        .kpi .kpi-value { font-size: 18px; font-weight: bold; color: #1e293b; margin-top: 4px; }
+        .kpi .kpi-delta { font-size: 11px; margin-top: 2px; }
+        .delta-up { color: #16a34a; }
+        .delta-down { color: #dc2626; }
+        .kpi.accent { background: #eff6ff; border-color: #bfdbfe; }
+        .kpi.accent .kpi-value { color: #1d4ed8; }
+        .kpi.green { background: #f0fdf4; border-color: #bbf7d0; }
+        .kpi.green .kpi-value { color: #166534; }
+        .alerte-stock { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 10px; margin-bottom: 15px; font-size: 13px; color: #92400e; }
+        .alerte-stock strong { color: #78350f; }
+        .alerte-stock .btn-mini { background: #f59e0b; color: white; }
+        .top-list { font-size: 12px; }
+        .top-list > div { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f1f5f9; }
+        .top-list > div:last-child { border-bottom: none; }
+        .separator { border-top: 1px dashed #cbd5e1; margin: 10px 0; }
+        .badge { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 4px; background: #e2e8f0; color: #475569; font-weight: bold; }
+        .badge.red { background: #fee2e2; color: #991b1b; }
+        .badge.green { background: #dcfce7; color: #166534; }
+        .badge.blue { background: #dbeafe; color: #1e40af; }
+        /* --- Avoir --- */
+        .avoir-tag { background: #fef2f2; color: #991b1b; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: bold; }
+        .vente-avoir { opacity: 0.6; text-decoration: line-through; }
     </style>
 </head>
 <body>
+
+<div id="zone-alertes"></div>
 
 <div class="box">
     <h2>🏢 Mon Établissement</h2>
@@ -53,6 +83,40 @@
     <label>Clé d'affiliation SumUp (optionnel)</label>
     <input type="text" id="cfg-sumup" placeholder="Créée sur me.sumup.com/developers" oninput="saveConfig()">
     <div style="font-size:11px;color:#64748b">Identifiant d'application à déclarer chez SumUp : com.monentreprise.macompta</div>
+</div>
+
+<!-- NOUVEAU : tableau de bord mensuel -->
+<div class="box">
+    <h2>📊 Tableau de Bord du Mois</h2>
+    <div class="kpi-grid">
+        <div class="kpi accent">
+            <div class="kpi-label">CA du mois</div>
+            <div class="kpi-value" id="kpi-ca-mois">0.00 €</div>
+            <div class="kpi-delta" id="kpi-ca-delta"></div>
+        </div>
+        <div class="kpi green">
+            <div class="kpi-label">Marge brute</div>
+            <div class="kpi-value" id="kpi-marge-mois">0.00 €</div>
+            <div class="kpi-delta" id="kpi-marge-taux"></div>
+        </div>
+    </div>
+    <div class="kpi-grid">
+        <div class="kpi">
+            <div class="kpi-label">TVA collectée</div>
+            <div class="kpi-value" id="kpi-tva-mois">0.00 €</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Panier moyen</div>
+            <div class="kpi-value" id="kpi-panier">0.00 €</div>
+            <div class="kpi-delta" id="kpi-nb-factures"></div>
+        </div>
+    </div>
+    <div class="separator"></div>
+    <h2 style="border:none;padding:0;margin-bottom:6px">💰 À rapprocher (relevés bancaires)</h2>
+    <div id="top-rapprochement" class="top-list"></div>
+    <div class="separator"></div>
+    <h2 style="border:none;padding:0;margin-bottom:6px">🔥 Top 5 articles (30 derniers jours)</h2>
+    <div id="top-articles" class="top-list"></div>
 </div>
 
 <div class="box" style="background: #f0fdf4;">
@@ -76,7 +140,10 @@
     </div>
     <label style="display:flex;gap:6px;align-items:center;font-weight:normal"><input type="checkbox" id="bil-detail" checked style="width:auto;margin:0"> Inclure le détail des factures</label>
     <div id="bil-apercu"></div>
-    <button class="btn-dark" onclick="editerBilan()">📄 Éditer le bilan (PDF)</button>
+    <div class="grid">
+        <button class="btn-dark" onclick="editerBilan()">📄 Bilan (PDF)</button>
+        <button class="btn-blue" onclick="exportCsvPeriode()">📊 Export CSV</button>
+    </div>
 </div>
 
 <div class="box">
@@ -161,20 +228,26 @@
     <h2>📦 Ajouter au Stock</h2>
     <label>Nom du produit</label>
     <input type="text" id="stk-name" placeholder="Ex: T-shirt XL">
-    <div class="grid3">
+    <div class="grid4">
         <div>
             <label>Prix Vente TTC (€)</label>
             <input type="number" id="stk-price" step="0.01" placeholder="0.00">
+        </div>
+        <div>
+            <label>Prix Achat HT (€)</label>
+            <input type="number" id="stk-buyprice" step="0.01" placeholder="0.00" title="Optionnel : permet de calculer la marge">
         </div>
         <div>
             <label>TVA (%)</label>
             <input type="number" id="stk-tva" step="0.1" value="20" min="0" max="100">
         </div>
         <div>
-            <label>Quantité</label>
+            <label>Qté</label>
             <input type="number" id="stk-qty" placeholder="10">
         </div>
     </div>
+    <label>Seuil d'alerte stock bas (optionnel, défaut 3)</label>
+    <input type="number" id="stk-seuil" placeholder="3" min="0">
     <button class="btn-dark" onclick="createStock()">Créer l'article</button>
 
     <label style="margin-top: 15px;">Inventaire Réel :</label>
@@ -183,6 +256,9 @@
 
 <div class="box">
     <h2>📜 Factures Clôturées</h2>
+    <div style="display:flex;gap:6px;margin-bottom:8px">
+        <button class="btn-gray btn-mini" style="flex:1;padding:8px" onclick="exporterToutCsv()">📊 Tout exporter en CSV</button>
+    </div>
     <div id="liste-historique"></div>
     <button class="btn-danger" onclick="resetAll()" style="margin-top: 20px; font-size: 11px; padding: 6px;">⚠️ Tout Réinitialiser</button>
 </div>
@@ -191,7 +267,8 @@
     // ---------- État ----------
     let stocks = [], ventes = [], panier = [];
     let profil = profilVide();
-    let compteur = 0;            // dernier numéro de facture attribué (jamais remis à zéro)
+    let compteur = 0;
+    let compteurAvoir = 0;
     let isLibre = false;
     let config = { sumupKey: "" };
 
@@ -201,11 +278,17 @@
         try { ventes = JSON.parse(localStorage.getItem('vnt_data')) || []; } catch(e) { ventes = []; }
         try { profil = Object.assign(profilVide(), JSON.parse(localStorage.getItem('prf_data')) || {}); } catch(e) { profil = profilVide(); }
         try { compteur = parseInt(localStorage.getItem('cpt_data')) || 0; } catch(e) { compteur = 0; }
+        try { compteurAvoir = parseInt(localStorage.getItem('cpt_avoir_data')) || 0; } catch(e) { compteurAvoir = 0; }
         try { config = Object.assign({ sumupKey: "" }, JSON.parse(localStorage.getItem('cfg_data')) || {}); } catch(e) { config = { sumupKey: "" }; }
+        // Migration : ajout du champ buyPrice / seuil aux stocks existants
+        stocks = stocks.map(s => Object.assign({ buyPrice: null, seuil: 3 }, s));
     }
     function saveStocks() { try { localStorage.setItem('stk_data', JSON.stringify(stocks)); } catch(e){ console.warn(e); } }
     function saveVentes() { try { localStorage.setItem('vnt_data', JSON.stringify(ventes)); } catch(e){ console.warn(e); } }
-    function saveCompteur() { try { localStorage.setItem('cpt_data', String(compteur)); } catch(e){ console.warn(e); } }
+    function saveCompteur() {
+        try { localStorage.setItem('cpt_data', String(compteur)); } catch(e){ console.warn(e); }
+        try { localStorage.setItem('cpt_avoir_data', String(compteurAvoir)); } catch(e){}
+    }
     function saveConfig() {
         config.sumupKey = document.getElementById('cfg-sumup').value.trim();
         try { localStorage.setItem('cfg_data', JSON.stringify(config)); } catch(e){}
@@ -220,6 +303,7 @@
 
     // ---------- Format ----------
     function fmt(n) { return Number(n).toFixed(2) + ' €'; }
+    function fmtPct(n) { return (n >= 0 ? '+' : '') + Number(n).toFixed(1) + ' %'; }
     function esc(s) {
         return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
@@ -230,7 +314,6 @@
             .filter(Boolean).map(l => '<div>' + l + '</div>').join('');
     }
 
-    // ---------- Confirmation fiable (Android natif si dispo) ----------
     function askConfirm(title, msg, ok, cancel, callback) {
         window.__confirmCb = callback;
         if (window.AndroidBridge && AndroidBridge.confirm) {
@@ -265,21 +348,49 @@
     function createStock() {
         const name = document.getElementById('stk-name').value.trim();
         const price = parseFloat(document.getElementById('stk-price').value);
+        const buyPrice = parseFloat(document.getElementById('stk-buyprice').value);
         const tva = parseFloat(document.getElementById('stk-tva').value);
         const qty = parseInt(document.getElementById('stk-qty').value);
+        const seuil = parseInt(document.getElementById('stk-seuil').value);
 
         if (!name || isNaN(price) || isNaN(qty) || isNaN(tva) || price < 0 || qty < 0 || tva < 0) {
             alert("Erreur : Veuillez remplir toutes les cases correctement.");
             return;
         }
 
-        stocks.push({ id: "ID-" + Date.now(), name, price, tva, qty });
+        stocks.push({
+            id: "ID-" + Date.now(), name, price,
+            buyPrice: isNaN(buyPrice) ? null : buyPrice,
+            tva, qty,
+            seuil: isNaN(seuil) ? 3 : seuil
+        });
         document.getElementById('stk-name').value = "";
         document.getElementById('stk-price').value = "";
+        document.getElementById('stk-buyprice').value = "";
         document.getElementById('stk-tva').value = "20";
         document.getElementById('stk-qty').value = "";
+        document.getElementById('stk-seuil').value = "";
         saveStocks();
         render();
+    }
+
+    function supprimerStock(id) {
+        askConfirm("Supprimer cet article ?", "L'article sera retiré de l'inventaire (les factures passées ne changent pas).", "Supprimer", "Annuler", ok => {
+            if (!ok) return;
+            stocks = stocks.filter(p => p.id !== id);
+            saveStocks(); render();
+        });
+    }
+
+    function modifierSeuil(id) {
+        const item = stocks.find(p => p.id === id);
+        if (!item) return;
+        const v = prompt("Nouveau seuil d'alerte pour " + item.name + " :", item.seuil || 3);
+        if (v === null) return;
+        const n = parseInt(v);
+        if (isNaN(n) || n < 0) { alert("Valeur invalide."); return; }
+        item.seuil = n;
+        saveStocks(); render();
     }
 
     // ---------- Panier ----------
@@ -293,7 +404,7 @@
             return;
         }
 
-        let name, pId = "MANUEL";
+        let name, pId = "MANUEL", buyPrice = null;
 
         if (isLibre) {
             name = document.getElementById('inp-name-libre').value.trim();
@@ -305,9 +416,10 @@
             if (stocks[idx].qty < qty) { alert("Stock insuffisant."); return; }
             name = stocks[idx].name;
             pId = stocks[idx].id;
+            buyPrice = stocks[idx].buyPrice;
         }
 
-        panier.push({ pId, name, qty, price, tva, total: price * qty });
+        panier.push({ pId, name, qty, price, tva, buyPrice, total: price * qty });
         document.getElementById('inp-name-libre').value = "";
         document.getElementById('inp-price').value = "";
         document.getElementById('inp-qty').value = "1";
@@ -332,13 +444,36 @@
         return { ht, tva, ttc };
     }
 
+    // Marge brute : (prix vente HT - prix achat HT) * qté, uniquement si buyPrice connu
+    function computeMarge(items) {
+        let marge = 0, margeConnue = 0, caConnu = 0;
+        (items || []).forEach(i => {
+            const ttc = i.price * i.qty;
+            const ht = ttc / (1 + (i.tva / 100));
+            if (i.buyPrice != null && !isNaN(i.buyPrice)) {
+                const cout = i.buyPrice * i.qty;
+                marge += (ht - cout);
+                margeConnue += ht;
+                caConnu += ht;
+            }
+        });
+        return { marge, margeConnue, taux: margeConnue > 0 ? (marge / margeConnue) * 100 : 0 };
+    }
+
     // ---------- Numérotation continue ----------
-    // Format : FA-000001, FA-000002, ... Le compteur n'est jamais remis à zéro,
-    // même après une réinitialisation, pour éviter tout doublon de numéro.
     function prochainNumero() {
         let max = compteur;
         ventes.forEach(v => {
+            if (v.avoir) return;
             const m = /^FA-(\d+)$/.exec(v.id || "");
+            if (m) max = Math.max(max, parseInt(m[1], 10));
+        });
+        return max + 1;
+    }
+    function prochainNumeroAvoir() {
+        let max = compteurAvoir;
+        ventes.forEach(v => {
+            const m = /^AV-(\d+)$/.exec(v.id || "");
             if (m) max = Math.max(max, parseInt(m[1], 10));
         });
         return max + 1;
@@ -363,7 +498,6 @@
         cloturer(payMode, panier, null);
     }
 
-    // Crée la facture. `lignes` = articles vendus ; `extra` = infos SumUp éventuelles.
     function cloturer(payMode, lignes, extra) {
         lignes.forEach(item => {
             if (item.pId !== "MANUEL") {
@@ -377,29 +511,65 @@
         compteur = num;
         const fRef = "FA-" + String(num).padStart(6, "0");
         const nouvelleVente = {
-            id: fRef,
-            num: num,
-            date: new Date().toLocaleString('fr-FR'),
-            dateTs: Date.now(),
-            ht: t.ht,
-            tva: t.tva,
-            total: t.ttc,
+            id: fRef, num: num,
+            date: new Date().toLocaleString('fr-FR'), dateTs: Date.now(),
+            ht: t.ht, tva: t.tva, total: t.ttc,
             payment: payMode,
             profil: Object.assign({}, profil),
-            items: lignes.map(i => ({ name: i.name, qty: i.qty, price: i.price, tva: i.tva }))
+            items: lignes.map(i => ({ name: i.name, qty: i.qty, price: i.price, tva: i.tva, buyPrice: i.buyPrice }))
         };
         if (extra) nouvelleVente.sumup = extra;
-
         ventes.push(nouvelleVente);
         if (lignes === panier) panier = [];
-        saveVentes();
-        saveCompteur();
-        saveStocks();
+        saveVentes(); saveCompteur(); saveStocks();
         render();
         alert("Facture " + fRef + " clôturée.\nTTC : " + fmt(t.ttc));
     }
 
-    // ---------- Paiement par l'application SumUp ----------
+    // ---------- Avoir / remboursement ----------
+    function creerAvoir(idVente) {
+        const v = ventes.find(x => x.id === idVente);
+        if (!v) { alert("Facture introuvable."); return; }
+        if (v.avoir) { alert("Cette facture est déjà un avoir."); return; }
+        if (v.annulee) { alert("Cette facture a déjà un avoir."); return; }
+        askConfirm("Créer un avoir ?",
+            "Un avoir " + "AV-" + " sera créé pour " + fmt(v.total) + ".\n" +
+            "Les articles seront remis en stock et la vente sera annulée comptablement.\n" +
+            "La facture d'origine reste dans l'historique (traçabilité).",
+            "Créer l'avoir", "Annuler",
+            ok => {
+                if (!ok) return;
+                const numAv = prochainNumeroAvoir();
+                compteurAvoir = numAv;
+                const refAv = "AV-" + String(numAv).padStart(6, "0");
+                // Remise en stock
+                (v.items || []).forEach(item => {
+                    if (!item.name) return;
+                    const s = stocks.find(p => p.name === item.name);
+                    if (s) s.qty += item.qty;
+                });
+                // On marque la vente d'origine comme annulée
+                v.annulee = true;
+                v.avoirId = refAv;
+                // On crée un avoir (montants positifs, mais la logique de bilan le traitera en négatif)
+                const avoir = {
+                    id: refAv, num: numAv,
+                    date: new Date().toLocaleString('fr-FR'), dateTs: Date.now(),
+                    ht: v.ht, tva: v.tva, total: v.total,
+                    payment: v.payment,
+                    profil: Object.assign({}, profil),
+                    items: (v.items || []).map(i => ({ ...i })),
+                    avoir: true,
+                    refVente: v.id
+                };
+                ventes.push(avoir);
+                saveVentes(); saveCompteur(); saveStocks();
+                render();
+                alert("Avoir " + refAv + " créé.\nTotal : " + fmt(v.total));
+            });
+    }
+
+    // ---------- Paiement SumUp ----------
     function lirePending() {
         try { return JSON.parse(localStorage.getItem('sumup_pending')); } catch(e) { return null; }
     }
@@ -416,14 +586,13 @@
             ". Aucune facture n'est créée tant que le paiement n'est pas confirmé.";
     }
 
-    // La facture n'est créée (et son numéro attribué) qu'après confirmation du paiement.
     function lancerSumup() {
         if (lirePending()) { alert("Un paiement SumUp est déjà en attente : validez-le ou abandonnez-le d'abord."); return; }
         const t = computeTotaux(panier);
         const total = t.ttc.toFixed(2);
         const pending = {
             ts: Date.now(), total: total,
-            lignes: panier.map(i => ({ pId: i.pId, name: i.name, qty: i.qty, price: i.price, tva: i.tva, total: i.total }))
+            lignes: panier.map(i => ({ pId: i.pId, name: i.name, qty: i.qty, price: i.price, tva: i.tva, buyPrice: i.buyPrice, total: i.total }))
         };
         try { localStorage.setItem('sumup_pending', JSON.stringify(pending)); }
         catch(e) { alert("Impossible de préparer le paiement."); return; }
@@ -471,8 +640,9 @@
     // ---------- Sauvegarde / Restauration ----------
     function buildBackup() {
         return JSON.stringify({
-            app: "MaCompta", version: 1, date: new Date().toISOString(),
-            compteur: compteur, config: config, profil: profil, stocks: stocks, ventes: ventes
+            app: "MaCompta", version: 2, date: new Date().toISOString(),
+            compteur: compteur, compteurAvoir: compteurAvoir,
+            config: config, profil: profil, stocks: stocks, ventes: ventes
         }, null, 1);
     }
 
@@ -485,9 +655,9 @@
         const nom = "MaCompta_sauvegarde_" + new Date().toISOString().slice(0, 10) + ".json";
         const data = buildBackup();
         if (window.AndroidBridge && AndroidBridge.saveBackup) {
-            AndroidBridge.saveBackup(nom, data);   // résultat : window.__onBackupSaved
+            AndroidBridge.saveBackup(nom, data);
         } else {
-            const a = document.createElement('a');   // test dans un navigateur
+            const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
             a.download = nom;
             a.click();
@@ -502,7 +672,7 @@
 
     function restaurer() {
         if (window.AndroidBridge && AndroidBridge.pickBackup) {
-            AndroidBridge.pickBackup();            // résultat : window.__onBackupLoaded
+            AndroidBridge.pickBackup();
         } else {
             const inp = document.createElement('input');
             inp.type = 'file'; inp.accept = '.json,application/json';
@@ -529,11 +699,11 @@
             "Les données actuelles seront REMPLACÉES.",
             "Restaurer", "Annuler", (ok) => {
                 if (!ok) return;
-                stocks = d.stocks;
-                ventes = d.ventes;
+                stocks = (d.stocks || []).map(s => Object.assign({ buyPrice: null, seuil: 3 }, s));
+                ventes = d.ventes || [];
                 profil = Object.assign(profilVide(), (d.profil && typeof d.profil === 'object') ? d.profil : {});
-                // On garde le plus grand compteur pour ne jamais réutiliser un numéro déjà émis
                 compteur = Math.max(compteur, parseInt(d.compteur) || 0);
+                compteurAvoir = Math.max(compteurAvoir, parseInt(d.compteurAvoir) || 0);
                 panier = [];
                 if (d.config && typeof d.config === 'object') { config = Object.assign({ sumupKey: "" }, d.config); saveConfig(); }
                 saveStocks(); saveVentes(); saveCompteur();
@@ -562,26 +732,23 @@
     // ---------- Reset ----------
     function resetAll() {
         askConfirm("Réinitialiser ?",
-            "Supprimer TOUTES les données (stock, ventes, profil) ?\nLe compteur de numérotation des factures est conservé.\nAction irréversible.",
+            "Supprimer TOUTES les données (stock, ventes, profil) ?\nLes compteurs de numérotation sont conservés.\nAction irréversible.",
             "Oui, supprimer", "Annuler", (ok) => {
                 if (!ok) return;
-                askConfirm("Confirmation finale",
-                    "Vraiment sûr ? Faites une sauvegarde avant.",
-                    "Confirmer", "Annuler", (ok2) => {
-                        if (!ok2) return;
-                        stocks = []; ventes = []; panier = []; profil = profilVide();
-                        try {
-                            localStorage.removeItem('stk_data');
-                            localStorage.removeItem('vnt_data');
-                            localStorage.removeItem('prf_data');
-                            localStorage.removeItem('sumup_pending');
-                            // 'cpt_data' est volontairement conservé (numérotation continue)
-                        } catch(e){}
-                        document.getElementById('ent-name').value = "";
-                        document.getElementById('ent-siret').value = "";
-                        render();
-                        if (window.AndroidBridge && AndroidBridge.toast) AndroidBridge.toast("Données effacées");
-                    });
+                askConfirm("Confirmation finale", "Vraiment sûr ? Faites une sauvegarde avant.", "Confirmer", "Annuler", (ok2) => {
+                    if (!ok2) return;
+                    stocks = []; ventes = []; panier = []; profil = profilVide();
+                    try {
+                        localStorage.removeItem('stk_data');
+                        localStorage.removeItem('vnt_data');
+                        localStorage.removeItem('prf_data');
+                        localStorage.removeItem('sumup_pending');
+                    } catch(e){}
+                    document.getElementById('ent-name').value = "";
+                    document.getElementById('ent-siret').value = "";
+                    render();
+                    if (window.AndroidBridge && AndroidBridge.toast) AndroidBridge.toast("Données effacées");
+                });
             });
     }
 
@@ -599,7 +766,7 @@
                 <td style="text-align:right">${fmt(ttc)}</td>
             </tr>`;
         }).join('');
-
+        const titre = v.avoir ? 'Avoir ' + esc(v.id) : 'Facture ' + esc(v.id);
         return `<!DOCTYPE html><html><head><meta charset="UTF-8">
         <style>
             body{font-family:sans-serif;padding:20px;font-size:12px;color:#1e293b}
@@ -613,11 +780,13 @@
             .tot div{padding:3px 0}
             .tot .ttc{font-weight:bold;font-size:15px;color:#166534;border-top:1px solid #cbd5e1;padding-top:6px}
             .footer{margin-top:30px;font-size:10px;color:#94a3b8;text-align:center}
+            .avoir-badge{background:#fee2e2;color:#991b1b;padding:4px 10px;border-radius:6px;font-weight:bold;display:inline-block;margin-bottom:8px}
         </style></head><body>
+        ${v.avoir ? '<div class="avoir-badge">AVOIR — Remboursement de la facture ' + esc(v.refVente || '') + '</div>' : ''}
         <div class="hdr">
             <div><h1>${esc(v.profil.name || "Mon Établissement")}</h1>
                 ${lignesEntreprise(v.profil)}</div>
-            <div class="right"><h1>Facture ${esc(v.id)}</h1>
+            <div class="right"><h1>${titre}</h1>
                 <div>${esc(v.date)}</div>
                 <div>Paiement : ${esc(v.payment)}</div>${v.sumup && v.sumup.tx ? '<div>Réf. SumUp : ' + esc(v.sumup.tx) + '</div>' : ''}</div>
         </div>
@@ -632,9 +801,9 @@
         <div class="tot">
             <div>Total HT : ${fmt(v.ht)}</div>
             <div>Total TVA : ${fmt(v.tva)}</div>
-            <div class="ttc">TOTAL TTC : ${fmt(v.total)}</div>
+            <div class="ttc">${v.avoir ? 'TOTAL AVOIR TTC' : 'TOTAL TTC'} : ${fmt(v.total)}</div>
         </div>
-        <div class="footer">${v.profil.mention ? esc(v.profil.mention) : "Facture générée par Ma Compta"}</div>
+        <div class="footer">${v.profil.mention ? esc(v.profil.mention) : "Document généré par Ma Compta"}</div>
         </body></html>`;
     }
 
@@ -645,16 +814,14 @@
             alert("Export PDF disponible uniquement dans l'application Android.");
             return;
         }
-        // Ouvre la boîte d'impression Android : « Enregistrer au format PDF », partage ou imprimante
-        AndroidBridge.exportPdfAndShare(buildFactureHtml(v), "Facture_" + v.id + ".pdf");
+        AndroidBridge.exportPdfAndShare(buildFactureHtml(v), (v.avoir ? "Avoir_" : "Facture_") + v.id + ".pdf");
     }
 
-    // ---------- Bilan de la journée ----------
+    // ---------- Bilan ----------
     function jourLocal(ts) {
         const d = new Date(ts);
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
-
     function fmtJour(iso) { return new Date(iso + 'T12:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
 
     function plage(preset) {
@@ -695,19 +862,26 @@
     function calculerBilan(a, b) {
         const L = ventes.filter(v => v.dateTs && jourLocal(v.dateTs) >= a && jourLocal(v.dateTs) <= b).sort((x, y) => x.dateTs - y.dateTs);
         const tot = { ht: 0, tva: 0, ttc: 0 }, parMode = {}, parTaux = {}, parJour = {};
+        let marge = 0, margeConnue = 0;
         L.forEach(v => {
-            tot.ht += v.ht; tot.tva += v.tva; tot.ttc += v.total;
+            // Un avoir vient en déduction
+            const signe = v.avoir ? -1 : 1;
+            tot.ht += signe * v.ht; tot.tva += signe * v.tva; tot.ttc += signe * v.total;
             const m = parMode[v.payment] = parMode[v.payment] || { n: 0, ttc: 0 };
-            m.n++; m.ttc += v.total;
+            m.n += signe; m.ttc += signe * v.total;
             const j = parJour[jourLocal(v.dateTs)] = parJour[jourLocal(v.dateTs)] || { n: 0, ttc: 0 };
-            j.n++; j.ttc += v.total;
+            j.n += signe; j.ttc += signe * v.total;
             (v.items || []).forEach(i => {
                 const ttc = i.price * i.qty, ht = ttc / (1 + i.tva / 100);
                 const t = parTaux[String(i.tva)] = parTaux[String(i.tva)] || { ht: 0, tva: 0 };
-                t.ht += ht; t.tva += ttc - ht;
+                t.ht += signe * ht; t.tva += signe * (ttc - ht);
+                if (i.buyPrice != null && !isNaN(i.buyPrice)) {
+                    marge += signe * (ht - i.buyPrice * i.qty);
+                    margeConnue += signe * ht;
+                }
             });
         });
-        return { L, tot, parMode, parTaux, parJour };
+        return { L, tot, parMode, parTaux, parJour, marge, margeConnue, tauxMarge: margeConnue > 0 ? (marge / margeConnue) * 100 : 0 };
     }
 
     function renderBilanApercu() {
@@ -729,7 +903,12 @@
         const jours = unJour ? "" : `<h3>Par jour</h3><table><thead><tr><th>Date</th><th style="text-align:center">Factures</th><th style="text-align:right">Total TTC</th></tr></thead><tbody>${
             Object.keys(B.parJour).sort().map(k => `<tr><td>${esc(fmtJour(k))}</td><td style="text-align:center">${B.parJour[k].n}</td><td style="text-align:right">${fmt(B.parJour[k].ttc)}</td></tr>`).join('')}</tbody></table>`;
         const lignes = !detail ? "" : `<h3>Détail des factures</h3><table><thead><tr><th>N°</th><th>Date</th><th>Paiement</th><th style="text-align:right">TTC</th></tr></thead><tbody>${
-            B.L.map(v => `<tr><td>${esc(v.id)}</td><td>${esc(new Date(v.dateTs).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }))}</td><td>${esc(v.payment)}</td><td style="text-align:right">${fmt(v.total)}</td></tr>`).join('')}</tbody></table>`;
+            B.L.map(v => `<tr><td>${esc(v.id)}${v.avoir ? ' (avoir)' : ''}</td><td>${esc(new Date(v.dateTs).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }))}</td><td>${esc(v.payment)}</td><td style="text-align:right">${fmt(v.total)}</td></tr>`).join('')}</tbody></table>`;
+        const margeBloc = B.margeConnue > 0 ? `<h3>Marge brute</h3><table><tbody>
+            <tr><td>CA HT connu</td><td style="text-align:right">${fmt(B.margeConnue)}</td></tr>
+            <tr><td>Marge brute</td><td style="text-align:right">${fmt(B.marge)}</td></tr>
+            <tr><td>Taux de marge</td><td style="text-align:right">${B.tauxMarge.toFixed(1)} %</td></tr>
+            </tbody></table>` : "";
         return `<!DOCTYPE html><html><head><meta charset="UTF-8">
         <style>
             body{font-family:sans-serif;padding:20px;font-size:12px;color:#1e293b}
@@ -755,7 +934,7 @@
         <table><thead><tr><th>Taux</th><th style="text-align:right">Base HT</th><th style="text-align:right">TVA</th></tr></thead><tbody>${taux}</tbody></table>
         <h3>Par mode de paiement</h3>
         <table><thead><tr><th>Mode</th><th style="text-align:center">Nb</th><th style="text-align:right">Total TTC</th></tr></thead><tbody>${modes}</tbody></table>
-        ${jours}${lignes}
+        ${margeBloc}${jours}${lignes}
         <div class="footer">Document de gestion établi par Ma Compta : il ne constitue pas une clôture de caisse certifiée.</div>
         </body></html>`;
     }
@@ -771,6 +950,170 @@
         AndroidBridge.exportPdfAndShare(buildBilanHtml(a, b, detail), "Bilan_" + (a === b ? a : a + "_au_" + b) + ".pdf");
     }
 
+    // ---------- Export CSV ----------
+    function csvCell(v) {
+        const s = String(v == null ? "" : v);
+        if (/[;"\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+        return s;
+    }
+    function buildCsvPeriode(a, b) {
+        const B = calculerBilan(a, b);
+        // Section 1 : factures
+        let csv = "Numéro;Date;Type;Mode paiement;Total HT;Total TVA;Total TTC;Articles;Réf SumUp\n";
+        B.L.forEach(v => {
+            const arts = (v.items || []).map(i => i.qty + "x " + i.name + " (" + fmt(i.price) + ", TVA " + i.tva + "%)").join(" | ");
+            csv += [
+                csvCell(v.id),
+                csvCell(v.date),
+                v.avoir ? "Avoir" : "Facture",
+                csvCell(v.payment),
+                csvCell(v.ht.toFixed(2)),
+                csvCell(v.tva.toFixed(2)),
+                csvCell((v.avoir ? -v.total : v.total).toFixed(2)),
+                csvCell(arts),
+                csvCell(v.sumup && v.sumup.tx ? v.sumup.tx : "")
+            ].join(";") + "\n";
+        });
+        // Section 2 : récap par mode de paiement
+        csv += "\nRécapitulatif par mode de paiement\nMode;Nombre;Total TTC\n";
+        Object.keys(B.parMode).forEach(m => {
+            csv += [csvCell(m), csvCell(B.parMode[m].n), csvCell(B.parMode[m].ttc.toFixed(2))].join(";") + "\n";
+        });
+        // Section 3 : récap TVA
+        csv += "\nRécapitulatif TVA\nTaux;Base HT;TVA\n";
+        Object.keys(B.parTaux).sort((x,y)=>parseFloat(x)-parseFloat(y)).forEach(k => {
+            csv += [csvCell(k + " %"), csvCell(B.parTaux[k].ht.toFixed(2)), csvCell(B.parTaux[k].tva.toFixed(2))].join(";") + "\n";
+        });
+        // Section 4 : totaux
+        csv += "\nTotaux\nCA HT;CA TVA;CA TTC\n";
+        csv += [csvCell(B.tot.ht.toFixed(2)), csvCell(B.tot.tva.toFixed(2)), csvCell(B.tot.ttc.toFixed(2))].join(";") + "\n";
+        return csv;
+    }
+
+    function telechargerTexte(nom, contenu, mime) {
+        if (window.AndroidBridge && AndroidBridge.saveTextFile) {
+            AndroidBridge.saveTextFile(nom, contenu, mime || "text/csv");
+        } else {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob(["\ufeff" + contenu], { type: (mime || "text/csv") + ";charset=utf-8" }));
+            a.download = nom;
+            a.click();
+        }
+    }
+
+    function exportCsvPeriode() {
+        const r = lirePlage();
+        const csv = buildCsvPeriode(r[0], r[1]);
+        if (!csv) { alert("Aucune donnée."); return; }
+        telechargerTexte("MaCompta_" + (r[0] === r[1] ? r[0] : r[0] + "_au_" + r[1]) + ".csv", csv, "text/csv");
+    }
+
+    function exporterToutCsv() {
+        if (!ventes.length) { alert("Aucune facture à exporter."); return; }
+        const a = jourLocal(ventes[0].dateTs || Date.now());
+        const b = jourLocal(Date.now());
+        telechargerTexte("MaCompta_tout_" + a + "_au_" + b + ".csv", buildCsvPeriode(a, b), "text/csv");
+    }
+
+    // ---------- Tableau de bord ----------
+    function statsDuMois(annee, mois) {
+        const debut = new Date(annee, mois, 1).getTime();
+        const fin = new Date(annee, mois + 1, 0, 23, 59, 59, 999).getTime();
+        const L = ventes.filter(v => v.dateTs >= debut && v.dateTs <= fin);
+        let ca = 0, tva = 0, nb = 0;
+        L.forEach(v => {
+            const signe = v.avoir ? -1 : 1;
+            ca += signe * v.total; tva += signe * v.tva; nb += signe;
+        });
+        return { ca, tva, nb };
+    }
+
+    function renderTableauDeBord() {
+        const now = new Date();
+        const moisCourant = statsDuMois(now.getFullYear(), now.getMonth());
+        const moisPrec = statsDuMois(now.getFullYear(), now.getMonth() - 1);
+        document.getElementById('kpi-ca-mois').textContent = fmt(moisCourant.ca);
+        document.getElementById('kpi-tva-mois').textContent = fmt(moisCourant.tva);
+
+        // Delta CA
+        const deltaEl = document.getElementById('kpi-ca-delta');
+        if (moisPrec.ca > 0) {
+            const delta = ((moisCourant.ca - moisPrec.ca) / moisPrec.ca) * 100;
+            deltaEl.textContent = fmtPct(delta) + " vs mois dernier (" + fmt(moisPrec.ca) + ")";
+            deltaEl.className = "kpi-delta " + (delta >= 0 ? "delta-up" : "delta-down");
+        } else {
+            deltaEl.textContent = "Pas de comparaison (mois dernier vide)";
+            deltaEl.className = "kpi-delta";
+        }
+
+        // Marge du mois
+        const a = jourLocal(new Date(now.getFullYear(), now.getMonth(), 1).getTime());
+        const b = jourLocal(Date.now());
+        const B = calculerBilan(a, b);
+        document.getElementById('kpi-marge-mois').textContent = fmt(B.marge);
+        const tauxEl = document.getElementById('kpi-marge-taux');
+        if (B.margeConnue > 0) {
+            tauxEl.textContent = "Taux de marge : " + B.tauxMarge.toFixed(1) + " %";
+            tauxEl.className = "kpi-delta " + (B.tauxMarge >= 0 ? "delta-up" : "delta-down");
+        } else {
+            tauxEl.textContent = "Renseignez les prix d'achat pour calculer la marge";
+            tauxEl.className = "kpi-delta";
+        }
+
+        // Panier moyen + nb factures
+        document.getElementById('kpi-panier').textContent = moisCourant.nb > 0 ? fmt(moisCourant.ca / moisCourant.nb) : "0.00 €";
+        document.getElementById('kpi-nb-factures').textContent = moisCourant.nb + " facture(s) ce mois";
+
+        // À rapprocher
+        const rap = document.getElementById('top-rapprochement');
+        const modesCarte = Object.keys(B.parMode).filter(m => m.indexOf('Carte') === 0 || m === 'Apple Pay' || m === 'Google Pay');
+        if (!modesCarte.length) {
+            rap.innerHTML = '<div class="empty">Aucun paiement carte ce mois</div>';
+        } else {
+            rap.innerHTML = modesCarte.map(m => {
+                const d = B.parMode[m];
+                return '<div><span><span class="badge blue">' + esc(m) + '</span></span><span><strong>' + fmt(d.ttc) + '</strong> <small style="color:#64748b">(' + d.n + ' tx)</small></span></div>';
+            }).join('');
+        }
+
+        // Top 5 articles (30 derniers jours)
+        const seuil = Date.now() - 30 * 24 * 60 * 60 * 1000;
+        const arts = {};
+        ventes.filter(v => !v.avoir && v.dateTs >= seuil).forEach(v => {
+            (v.items || []).forEach(i => {
+                const k = i.name;
+                if (!arts[k]) arts[k] = { qty: 0, ca: 0 };
+                arts[k].qty += i.qty;
+                arts[k].ca += i.price * i.qty;
+            });
+        });
+        const top = Object.keys(arts).sort((x, y) => arts[y].qty - arts[x].qty).slice(0, 5);
+        const topEl = document.getElementById('top-articles');
+        if (!top.length) {
+            topEl.innerHTML = '<div class="empty">Aucune vente sur 30 jours</div>';
+        } else {
+            topEl.innerHTML = top.map((k, idx) => '<div><span>' + (idx + 1) + '. ' + esc(k) + '</span><span><strong>' + arts[k].qty + '</strong> <small style="color:#64748b">(' + fmt(arts[k].ca) + ')</small></span></div>').join('');
+        }
+    }
+
+    // ---------- Alertes stock ----------
+    function renderAlertes() {
+        const zone = document.getElementById('zone-alertes');
+        const bas = stocks.filter(s => s.qty <= (s.seuil != null ? s.seuil : 3));
+        if (!bas.length) { zone.innerHTML = ''; return; }
+        const ruptures = bas.filter(s => s.qty <= 0);
+        const proches = bas.filter(s => s.qty > 0);
+        let html = '<div class="alerte-stock">⚠️ <strong>Stock bas</strong><br>';
+        if (ruptures.length) {
+            html += '<div>🚨 <strong>Ruptures :</strong> ' + ruptures.map(s => esc(s.name)).join(', ') + '</div>';
+        }
+        if (proches.length) {
+            html += '<div>🔔 <strong>À surveiller :</strong> ' + proches.map(s => esc(s.name) + ' (x' + s.qty + ')').join(', ') + '</div>';
+        }
+        html += '</div>';
+        zone.innerHTML = html;
+    }
+
     // ---------- Rendu ----------
     function render() {
         document.getElementById('ent-name').value = profil.name || "";
@@ -783,13 +1126,15 @@
         // CA du jour
         const today = new Date().toLocaleDateString('fr-FR');
         const ca = ventes
-            .filter(v => v.dateTs ? new Date(v.dateTs).toLocaleDateString('fr-FR') === today
-                                  : (v.date && v.date.startsWith(today)))
+            .filter(v => !v.avoir && (v.dateTs ? new Date(v.dateTs).toLocaleDateString('fr-FR') === today
+                                  : (v.date && v.date.startsWith(today))))
             .reduce((s, v) => s + v.total, 0);
         document.getElementById('txt-ca').textContent = fmt(ca);
 
         renderBackupStatus();
+        renderAlertes();
         renderBilanApercu();
+        renderTableauDeBord();
         renderPending();
         document.getElementById('cfg-sumup').value = config.sumupKey || "";
 
@@ -829,11 +1174,20 @@
         if (stocks.length === 0) {
             ls.innerHTML = '<div class="empty">Aucun article</div>';
         } else {
-            ls.innerHTML = stocks.map(p => `
+            ls.innerHTML = stocks.map(p => {
+                const enAlerte = p.qty <= (p.seuil != null ? p.seuil : 3);
+                const margeTxt = p.buyPrice != null
+                    ? ' — marge ' + fmt(p.price - p.buyPrice * (1 + p.tva / 100))
+                    : '';
+                return `
                 <div class="item-row">
-                    <span>${esc(p.name)} <small>— ${fmt(p.price)} — TVA ${p.tva}%</small></span>
-                    <span>Stock : <strong>${p.qty}</strong></span>
-                </div>`).join('');
+                    <span>${esc(p.name)} <small>— ${fmt(p.price)} — TVA ${p.tva}%${margeTxt}</small></span>
+                    <span>Stock : <strong style="${enAlerte ? 'color:#dc2626' : ''}">${p.qty}</strong>
+                        <button class="btn-gray btn-mini" onclick="modifierSeuil('${esc(p.id)}')" title="Modifier le seuil d'alerte">⚙️</button>
+                        <button class="btn-danger btn-mini" onclick="supprimerStock('${esc(p.id)}')" title="Supprimer">✕</button>
+                    </span>
+                </div>`;
+            }).join('');
         }
 
         // Historique
@@ -841,16 +1195,24 @@
         if (ventes.length === 0) {
             lh.innerHTML = '<div class="empty">Aucune facture</div>';
         } else {
-            lh.innerHTML = ventes.slice().reverse().map(v => `
-                <div class="item-row">
-                    <span><strong>${esc(v.id)}</strong><br>
+            lh.innerHTML = ventes.slice().reverse().map(v => {
+                const badge = v.avoir
+                    ? '<span class="avoir-tag">AVOIR</span>'
+                    : (v.annulee ? '<span class="avoir-tag">ANNULÉE</span>' : '');
+                const btnAvoir = (!v.avoir && !v.annulee)
+                    ? `<button class="btn-orange btn-mini" onclick="creerAvoir('${esc(v.id)}')" title="Créer un avoir">↩️</button>`
+                    : '';
+                return `
+                <div class="item-row ${v.annulee ? 'vente-avoir' : ''}">
+                    <span><strong>${esc(v.id)}</strong> ${badge}<br>
                         <small>${esc(v.date)} — ${esc(v.payment)}<br>
-                        HT ${fmt(v.ht)} / TVA ${fmt(v.tva)}</small></span>
+                        HT ${fmt(v.ht)} / TVA ${fmt(v.tva)}${v.avoir && v.refVente ? '<br>Avoir sur ' + esc(v.refVente) : ''}</small></span>
                     <span style="text-align:right">
-                        <strong>${fmt(v.total)}</strong><br>
-                        <button class="btn-dark btn-mini" onclick="exportPdf('${esc(v.id)}')">📄 PDF</button>
+                        <strong>${v.avoir ? '-' : ''}${fmt(v.total)}</strong><br>
+                        <button class="btn-dark btn-mini" onclick="exportPdf('${esc(v.id)}')">📄</button>${btnAvoir}
                     </span>
-                </div>`).join('');
+                </div>`;
+            }).join('');
         }
     }
 
