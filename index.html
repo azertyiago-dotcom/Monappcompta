@@ -2,16 +2,19 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#f1f5f9">
     <title>Ma Compta</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; }
-        body { background-color: #f1f5f9; color: #1e293b; padding: 15px; padding-bottom: 40px; }
-        .box { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
-        h2 { font-size: 14px; color: #64748b; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
-        label { display: block; font-size: 12px; font-weight: bold; margin: 8px 0 4px 0; color: #475569; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; background: #f8fafc; margin-bottom: 5px; color: #000; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 5px; -webkit-appearance: none; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        body { background-color: #f1f5f9; color: #1e293b; padding: 15px; padding-bottom: 40px; scrollbar-width: thin; }
+        .box { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+        h2 { font-size: 14px; color: #64748b; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; letter-spacing: 0.5px; }
+        label { display: block; font-size: 12px; font-weight: 600; margin: 10px 0 4px 0; color: #475569; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; background: #f8fafc; margin-bottom: 5px; color: #0f172a; transition: border-color 0.2s; }
+        input:focus, select:focus { outline: none; border-color: #2563eb; background: #fff; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; -webkit-appearance: none; transition: transform 0.1s, opacity 0.2s; }
+        button:active { transform: scale(0.98); opacity: 0.9; }
         .btn-blue { background: #2563eb; color: white; }
         .btn-dark { background: #1e293b; color: white; }
         .btn-gray { background: #e2e8f0; color: #1e293b; }
@@ -21,107 +24,110 @@
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; gap: 8px; }
-        .item-row small { color: #64748b; }
-        .btn-mini { width: auto; padding: 4px 8px; font-size: 11px; margin: 0 0 0 4px; border-radius: 4px; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; gap: 8px; }
+        .item-row:last-child { border-bottom: none; }
+        .item-row small { color: #64748b; display: block; margin-top: 2px; }
+        .btn-mini { width: auto; padding: 5px 10px; font-size: 11px; margin: 0 0 0 4px; border-radius: 6px; margin-top: 0; }
         .hidden { display: none !important; }
-        .nav-tabs { display: flex; gap: 5px; background: #e2e8f0; padding: 3px; border-radius: 6px; margin-bottom: 10px; }
-        .tab { flex: 1; text-align: center; padding: 6px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .nav-tabs { display: flex; gap: 5px; background: #e2e8f0; padding: 3px; border-radius: 8px; margin-bottom: 12px; }
+        .tab { flex: 1; text-align: center; padding: 8px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
         .tab.active { background: #2563eb; color: white; }
-        .empty { text-align: center; color: #94a3b8; font-size: 12px; padding: 10px; font-style: italic; }
-        .totals { margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 8px; font-size: 13px; }
-        .totals > div { display: flex; justify-content: space-between; padding: 2px 0; }
-        .totals .ttc { font-weight: bold; font-size: 15px; color: #166534; border-top: 1px solid #cbd5e1; padding-top: 6px; margin-top: 4px; }
-        .bak-status { font-size: 12px; padding: 8px; border-radius: 6px; background: #f1f5f9; color: #475569; margin-bottom: 8px; }
-        .bak-status.alerte { background: #fee2e2; color: #991b1b; font-weight: bold; }
-        /* --- Nouveaux styles --- */
-        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-        .kpi { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; }
-        .kpi .kpi-label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: bold; }
-        .kpi .kpi-value { font-size: 18px; font-weight: bold; color: #1e293b; margin-top: 4px; }
-        .kpi .kpi-delta { font-size: 11px; margin-top: 2px; }
+        .empty { text-align: center; color: #94a3b8; font-size: 12px; padding: 15px; font-style: italic; }
+        .totals { margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px; font-size: 13px; }
+        .totals > div { display: flex; justify-content: space-between; padding: 3px 0; }
+        .totals .ttc { font-weight: 700; font-size: 16px; color: #166534; border-top: 1px solid #cbd5e1; padding-top: 8px; margin-top: 6px; }
+        .bak-status { font-size: 12px; padding: 10px; border-radius: 8px; background: #f1f5f9; color: #475569; margin-bottom: 8px; }
+        .bak-status.alerte { background: #fee2e2; color: #991b1b; font-weight: 600; }
+        
+        /* KPI & Dashboard */
+        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .kpi { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+        .kpi .kpi-label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; }
+        .kpi .kpi-value { font-size: 20px; font-weight: 700; color: #1e293b; margin-top: 4px; }
+        .kpi .kpi-delta { font-size: 11px; margin-top: 4px; font-weight: 500; }
         .delta-up { color: #16a34a; }
         .delta-down { color: #dc2626; }
         .kpi.accent { background: #eff6ff; border-color: #bfdbfe; }
         .kpi.accent .kpi-value { color: #1d4ed8; }
         .kpi.green { background: #f0fdf4; border-color: #bbf7d0; }
         .kpi.green .kpi-value { color: #166534; }
-        .alerte-stock { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 10px; margin-bottom: 15px; font-size: 13px; color: #92400e; }
+        
+        /* Alertes & Badges */
+        .alerte-stock { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 10px; padding: 12px; margin-bottom: 15px; font-size: 13px; color: #92400e; }
         .alerte-stock strong { color: #78350f; }
-        .alerte-stock .btn-mini { background: #f59e0b; color: white; }
-        .top-list { font-size: 12px; }
-        .top-list > div { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f1f5f9; }
-        .top-list > div:last-child { border-bottom: none; }
-        .separator { border-top: 1px dashed #cbd5e1; margin: 10px 0; }
-        .badge { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 4px; background: #e2e8f0; color: #475569; font-weight: bold; }
+        .separator { border-top: 1px dashed #cbd5e1; margin: 12px 0; }
+        .badge { display: inline-block; font-size: 10px; padding: 3px 7px; border-radius: 5px; background: #e2e8f0; color: #475569; font-weight: 700; }
         .badge.red { background: #fee2e2; color: #991b1b; }
         .badge.green { background: #dcfce7; color: #166534; }
         .badge.blue { background: #dbeafe; color: #1e40af; }
-        /* --- Avoir --- */
-        .avoir-tag { background: #fef2f2; color: #991b1b; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: bold; }
+        .avoir-tag { background: #fef2f2; color: #991b1b; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
         .vente-avoir { opacity: 0.6; text-decoration: line-through; }
+        
+        /* Toast Notification */
+        #custom-toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center; max-width: 90%; }
     </style>
 </head>
 <body>
 
+<div id="custom-toast"></div>
 <div id="zone-alertes"></div>
 
 <div class="box">
     <h2>🏢 Mon Établissement</h2>
     <label>Nom de l'entreprise</label>
-    <input type="text" id="ent-name" oninput="saveProfil()">
+    <input type="text" id="ent-name" autocomplete="off" oninput="saveProfil()">
     <label>SIRET</label>
-    <input type="text" id="ent-siret" oninput="saveProfil()">
+    <input type="text" id="ent-siret" autocomplete="off" oninput="saveProfil()">
     <label>Adresse</label>
-    <input type="text" id="ent-address" placeholder="N°, rue, code postal, ville" oninput="saveProfil()">
+    <input type="text" id="ent-address" placeholder="N°, rue, code postal, ville" autocomplete="off" oninput="saveProfil()">
     <label>E-mail</label>
-    <input type="email" id="ent-email" oninput="saveProfil()">
+    <input type="email" id="ent-email" autocomplete="off" oninput="saveProfil()">
     <label>Téléphone</label>
-    <input type="tel" id="ent-phone" oninput="saveProfil()">
+    <input type="tel" id="ent-phone" autocomplete="off" oninput="saveProfil()">
     <label>Mention de bas de facture (optionnel)</label>
-    <input type="text" id="ent-mention" placeholder="Ex : mention propre à votre régime de TVA" oninput="saveProfil()">
+    <input type="text" id="ent-mention" placeholder="Ex: TVA non applicable, art. 293 B du CGI" autocomplete="off" oninput="saveProfil()">
     <label>Clé d'affiliation SumUp (optionnel)</label>
-    <input type="text" id="cfg-sumup" placeholder="Créée sur me.sumup.com/developers" oninput="saveConfig()">
-    <div style="font-size:11px;color:#64748b">Identifiant d'application à déclarer chez SumUp : com.monentreprise.macompta</div>
+    <input type="text" id="cfg-sumup" placeholder="Créée sur me.sumup.com/developers" autocomplete="off" oninput="saveConfig()">
+    <div style="font-size:11px;color:#64748b;margin-top:4px">Identifiant d'application à déclarer chez SumUp : com.monentreprise.macompta</div>
 </div>
 
-<!-- NOUVEAU : tableau de bord mensuel -->
+<!-- Tableau de bord mensuel -->
 <div class="box">
     <h2>📊 Tableau de Bord du Mois</h2>
     <div class="kpi-grid">
         <div class="kpi accent">
             <div class="kpi-label">CA du mois</div>
-            <div class="kpi-value" id="kpi-ca-mois">0.00 €</div>
+            <div class="kpi-value" id="kpi-ca-mois">0,00 €</div>
             <div class="kpi-delta" id="kpi-ca-delta"></div>
         </div>
         <div class="kpi green">
             <div class="kpi-label">Marge brute</div>
-            <div class="kpi-value" id="kpi-marge-mois">0.00 €</div>
+            <div class="kpi-value" id="kpi-marge-mois">0,00 €</div>
             <div class="kpi-delta" id="kpi-marge-taux"></div>
         </div>
     </div>
     <div class="kpi-grid">
         <div class="kpi">
             <div class="kpi-label">TVA collectée</div>
-            <div class="kpi-value" id="kpi-tva-mois">0.00 €</div>
+            <div class="kpi-value" id="kpi-tva-mois">0,00 €</div>
         </div>
         <div class="kpi">
             <div class="kpi-label">Panier moyen</div>
-            <div class="kpi-value" id="kpi-panier">0.00 €</div>
+            <div class="kpi-value" id="kpi-panier">0,00 €</div>
             <div class="kpi-delta" id="kpi-nb-factures"></div>
         </div>
     </div>
     <div class="separator"></div>
-    <h2 style="border:none;padding:0;margin-bottom:6px">💰 À rapprocher (relevés bancaires)</h2>
+    <h2 style="border:none;padding:0;margin-bottom:8px">💰 À rapprocher (relevés bancaires)</h2>
     <div id="top-rapprochement" class="top-list"></div>
     <div class="separator"></div>
-    <h2 style="border:none;padding:0;margin-bottom:6px">🔥 Top 5 articles (30 derniers jours)</h2>
+    <h2 style="border:none;padding:0;margin-bottom:8px">🔥 Top 5 articles (30 derniers jours)</h2>
     <div id="top-articles" class="top-list"></div>
 </div>
 
 <div class="box" style="background: #f0fdf4;">
     <h2>📈 Bilan du Jour (TTC)</h2>
-    <div style="font-size: 24px; font-weight: bold; color: #166534;" id="txt-ca">0.00 €</div>
+    <div style="font-size: 28px; font-weight: 700; color: #166534; margin-bottom: 10px;" id="txt-ca">0,00 €</div>
     <label>Période du bilan</label>
     <select id="bil-preset" onchange="appliquerPreset()">
         <option value="today">Aujourd'hui</option>
@@ -138,9 +144,11 @@
         <div><label>Du</label><input type="date" id="bil-from" onchange="plagePerso()"></div>
         <div><label>Au</label><input type="date" id="bil-to" onchange="plagePerso()"></div>
     </div>
-    <label style="display:flex;gap:6px;align-items:center;font-weight:normal"><input type="checkbox" id="bil-detail" checked style="width:auto;margin:0"> Inclure le détail des factures</label>
-    <div id="bil-apercu"></div>
-    <div class="grid">
+    <label style="display:flex;gap:8px;align-items:center;font-weight:normal;margin-top:8px">
+        <input type="checkbox" id="bil-detail" checked style="width:auto;margin:0"> Inclure le détail des factures
+    </label>
+    <div id="bil-apercu" style="margin-top:10px"></div>
+    <div class="grid" style="margin-top:12px">
         <button class="btn-dark" onclick="editerBilan()">📄 Bilan (PDF)</button>
         <button class="btn-blue" onclick="exportCsvPeriode()">📊 Export CSV</button>
     </div>
@@ -157,7 +165,7 @@
 
 <div class="box hidden" id="box-pending" style="background:#fffbeb;border-color:#f59e0b">
     <h2>⏳ Paiement SumUp en attente</h2>
-    <div id="pending-txt" style="font-size:13px;margin-bottom:6px"></div>
+    <div id="pending-txt" style="font-size:13px;margin-bottom:8px"></div>
     <div class="grid">
         <button class="btn-green" onclick="validerPending()">✅ Payé : clôturer</button>
         <button class="btn-danger" onclick="abandonnerPending()">❌ Abandonner</button>
@@ -165,7 +173,7 @@
 </div>
 
 <div class="box">
-    <h2>🛒 Enregistrer un Article</h2>
+    <h2>🛒 Enregistrer une Vente</h2>
     <div class="nav-tabs">
         <div id="t-stock" class="tab active" onclick="setMode(false)">Depuis Stock</div>
         <div id="t-libre" class="tab" onclick="setMode(true)">Saisie Directe</div>
@@ -178,37 +186,38 @@
 
     <div id="v-libre" class="hidden">
         <label>Nom de l'article</label>
-        <input type="text" id="inp-name-libre" placeholder="Ex: Café ou Prestation">
+        <input type="text" id="inp-name-libre" placeholder="Ex: Café ou Prestation" autocomplete="off">
     </div>
 
     <div class="grid3">
         <div>
             <label>Prix TTC (€)</label>
-            <input type="number" id="inp-price" step="0.01" placeholder="0.00">
+            <input type="number" id="inp-price" step="0.01" inputmode="decimal" placeholder="0.00">
         </div>
         <div>
             <label>TVA (%)</label>
-            <input type="number" id="inp-tva" step="0.1" value="20" min="0" max="100">
+            <input type="number" id="inp-tva" step="0.1" inputmode="decimal" value="20" min="0" max="100">
         </div>
         <div>
             <label>Qté</label>
-            <input type="number" id="inp-qty" value="1" min="1">
+            <input type="number" id="inp-qty" inputmode="numeric" value="1" min="1">
         </div>
     </div>
 
     <button class="btn-gray" onclick="addPanier()">➕ Ajouter au panier</button>
 
-    <div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+    <div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 12px;">
         <label>Panier Actuel :</label>
         <div id="liste-panier"></div>
+        <button class="btn-gray btn-mini" onclick="viderPanier()" id="btn-vider-panier" style="display:none;margin-top:8px">🗑️ Vider le panier</button>
         <div class="totals">
-            <div><span>Total HT</span><span id="tot-ht">0.00 €</span></div>
-            <div><span>Total TVA</span><span id="tot-tva">0.00 €</span></div>
-            <div class="ttc"><span>TOTAL TTC</span><span id="tot-ttc">0.00 €</span></div>
+            <div><span>Total HT</span><span id="tot-ht">0,00 €</span></div>
+            <div><span>Total TVA</span><span id="tot-tva">0,00 €</span></div>
+            <div class="ttc"><span>TOTAL TTC</span><span id="tot-ttc">0,00 €</span></div>
         </div>
     </div>
 
-    <label>Mode de paiement</label>
+    <label style="margin-top:12px">Mode de paiement</label>
     <select id="sel-pay">
         <option value="Espèces">💵 Espèces</option>
         <option value="Chèque">✍️ Chèque</option>
@@ -219,35 +228,41 @@
         <option value="Virement">🏦 Virement</option>
         <option value="Autre">➕ Autre</option>
     </select>
-    <div style="font-size:11px;color:#64748b;margin-bottom:5px">Carte (SumUp) : ouvre l'application SumUp pour encaisser (clé à renseigner en haut). Carte (Up2pay) : encaissez séparément dans l'application Up2pay, Ma Compta enregistre seulement la vente et le mode de paiement. Apple Pay, Google Pay, Virement, Autre : enregistrent seulement le mode de paiement.</div>
+    <div style="font-size:11px;color:#64748b;margin:6px 0 10px 0">
+        Carte (SumUp) : ouvre l'application SumUp (clé à renseigner en haut).<br>
+        Autres modes : enregistrent uniquement la vente dans Ma Compta.
+    </div>
 
-    <button class="btn-blue" onclick="encaisser()">🔒 Encaisser et Clôturer</button>
+    <button class="btn-blue" onclick="encaisser()" style="font-size:16px;padding:14px">🔒 Encaisser et Clôturer</button>
 </div>
 
 <div class="box">
-    <h2>📦 Ajouter au Stock</h2>
-    <label>Nom du produit</label>
-    <input type="text" id="stk-name" placeholder="Ex: T-shirt XL">
+    <h2>📦 Gestion du Stock</h2>
+    <label>🔍 Rechercher un article</label>
+    <input type="text" id="search-stock" placeholder="Nom du produit..." autocomplete="off" oninput="stockSearch=this.value; renderStock()">
+    
+    <label style="margin-top:12px">Nouvel article</label>
+    <input type="text" id="stk-name" placeholder="Ex: T-shirt XL" autocomplete="off">
     <div class="grid4">
         <div>
-            <label>Prix Vente TTC (€)</label>
-            <input type="number" id="stk-price" step="0.01" placeholder="0.00">
+            <label>Vente TTC</label>
+            <input type="number" id="stk-price" step="0.01" inputmode="decimal" placeholder="0.00">
         </div>
         <div>
-            <label>Prix Achat HT (€)</label>
-            <input type="number" id="stk-buyprice" step="0.01" placeholder="0.00" title="Optionnel : permet de calculer la marge">
+            <label>Achat HT</label>
+            <input type="number" id="stk-buyprice" step="0.01" inputmode="decimal" placeholder="0.00" title="Optionnel : permet de calculer la marge">
         </div>
         <div>
             <label>TVA (%)</label>
-            <input type="number" id="stk-tva" step="0.1" value="20" min="0" max="100">
+            <input type="number" id="stk-tva" step="0.1" inputmode="decimal" value="20" min="0" max="100">
         </div>
         <div>
             <label>Qté</label>
-            <input type="number" id="stk-qty" placeholder="10">
+            <input type="number" id="stk-qty" inputmode="numeric" placeholder="10">
         </div>
     </div>
-    <label>Seuil d'alerte stock bas (optionnel, défaut 3)</label>
-    <input type="number" id="stk-seuil" placeholder="3" min="0">
+    <label>Seuil d'alerte stock bas (défaut 3)</label>
+    <input type="number" id="stk-seuil" inputmode="numeric" placeholder="3" min="0">
     <button class="btn-dark" onclick="createStock()">Créer l'article</button>
 
     <label style="margin-top: 15px;">Inventaire Réel :</label>
@@ -256,62 +271,46 @@
 
 <div class="box">
     <h2>📜 Factures Clôturées</h2>
-    <div style="display:flex;gap:6px;margin-bottom:8px">
-        <button class="btn-gray btn-mini" style="flex:1;padding:8px" onclick="exporterToutCsv()">📊 Tout exporter en CSV</button>
+    <label>🔍 Rechercher (N°, article, mode)</label>
+    <input type="text" id="search-history" placeholder="Recherche..." autocomplete="off" oninput="historySearch=this.value; renderHistorique()">
+    
+    <div style="display:flex;gap:6px;margin:10px 0">
+        <button class="btn-gray btn-mini" style="flex:1;padding:10px" onclick="exporterToutCsv()">📊 Tout exporter en CSV</button>
     </div>
     <div id="liste-historique"></div>
-    <button class="btn-danger" onclick="resetAll()" style="margin-top: 20px; font-size: 11px; padding: 6px;">⚠️ Tout Réinitialiser</button>
+    <button class="btn-danger" onclick="resetAll()" style="margin-top: 20px; font-size: 11px; padding: 8px; opacity: 0.7;">⚠️ Tout Réinitialiser</button>
 </div>
 
 <script>
-    // ---------- État ----------
+    // ---------- État & Utilitaires ----------
     let stocks = [], ventes = [], panier = [];
     let profil = profilVide();
-    let compteur = 0;
-    let compteurAvoir = 0;
+    let compteur = 0, compteurAvoir = 0;
     let isLibre = false;
     let config = { sumupKey: "" };
+    let stockSearch = "", historySearch = "";
+    let profilTimeout;
 
-    // ---------- Persistance ----------
-    function loadAll() {
-        try { stocks = JSON.parse(localStorage.getItem('stk_data')) || []; } catch(e) { stocks = []; }
-        try { ventes = JSON.parse(localStorage.getItem('vnt_data')) || []; } catch(e) { ventes = []; }
-        try { profil = Object.assign(profilVide(), JSON.parse(localStorage.getItem('prf_data')) || {}); } catch(e) { profil = profilVide(); }
-        try { compteur = parseInt(localStorage.getItem('cpt_data')) || 0; } catch(e) { compteur = 0; }
-        try { compteurAvoir = parseInt(localStorage.getItem('cpt_avoir_data')) || 0; } catch(e) { compteurAvoir = 0; }
-        try { config = Object.assign({ sumupKey: "" }, JSON.parse(localStorage.getItem('cfg_data')) || {}); } catch(e) { config = { sumupKey: "" }; }
-        // Migration : ajout du champ buyPrice / seuil aux stocks existants
-        stocks = stocks.map(s => Object.assign({ buyPrice: null, seuil: 3 }, s));
-    }
-    function saveStocks() { try { localStorage.setItem('stk_data', JSON.stringify(stocks)); } catch(e){ console.warn(e); } }
-    function saveVentes() { try { localStorage.setItem('vnt_data', JSON.stringify(ventes)); } catch(e){ console.warn(e); } }
-    function saveCompteur() {
-        try { localStorage.setItem('cpt_data', String(compteur)); } catch(e){ console.warn(e); }
-        try { localStorage.setItem('cpt_avoir_data', String(compteurAvoir)); } catch(e){}
-    }
-    function saveConfig() {
-        config.sumupKey = document.getElementById('cfg-sumup').value.trim();
-        try { localStorage.setItem('cfg_data', JSON.stringify(config)); } catch(e){}
-    }
-    function profilVide() { return { name: "", siret: "", address: "", email: "", phone: "", mention: "" }; }
-    function saveProfil() {
-        const v = id => document.getElementById(id).value;
-        profil.name = v('ent-name'); profil.siret = v('ent-siret'); profil.address = v('ent-address');
-        profil.email = v('ent-email'); profil.phone = v('ent-phone'); profil.mention = v('ent-mention');
-        try { localStorage.setItem('prf_data', JSON.stringify(profil)); } catch(e){}
+    function parseNumber(val) {
+        return parseFloat(String(val).replace(',', '.'));
     }
 
-    // ---------- Format ----------
-    function fmt(n) { return Number(n).toFixed(2) + ' €'; }
-    function fmtPct(n) { return (n >= 0 ? '+' : '') + Number(n).toFixed(1) + ' %'; }
-    function esc(s) {
-        return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    }
-
-    function lignesEntreprise(p) {
-        return [p.address && esc(p.address), p.siret && ('SIRET : ' + esc(p.siret)),
-                p.phone && ('Tél : ' + esc(p.phone)), p.email && esc(p.email)]
-            .filter(Boolean).map(l => '<div>' + l + '</div>').join('');
+    function showToast(msg) {
+        if (window.AndroidBridge && AndroidBridge.toast) {
+            AndroidBridge.toast(msg);
+        } else {
+            let toast = document.getElementById('custom-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'custom-toast';
+                toast.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1e293b;color:white;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,0.15);text-align:center;max-width:90%;';
+                document.body.appendChild(toast);
+            }
+            toast.textContent = msg;
+            toast.style.opacity = '1';
+            clearTimeout(window.toastTimeout);
+            window.toastTimeout = setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+        }
     }
 
     function askConfirm(title, msg, ok, cancel, callback) {
@@ -321,6 +320,49 @@
         } else {
             callback(window.confirm(title + "\n\n" + msg));
         }
+    }
+
+    // ---------- Persistance ----------
+    function loadAll() {
+        try { stocks = JSON.parse(localStorage.getItem('stk_data')) || []; } catch(e) { stocks = []; }
+        try { ventes = JSON.parse(localStorage.getItem('vnt_data')) || []; } catch(e) { ventes = []; }
+        try { profil = Object.assign(profilVide(), JSON.parse(localStorage.getItem('prf_data')) || {}); } catch(e) { profil = profilVide(); }
+        try { compteur = parseInt(localStorage.getItem('cpt_data')) || 0; } catch(e) { compteur = 0; }
+        try { compteurAvoir = parseInt(localStorage.getItem('cpt_avoir_data')) || 0; } catch(e) { compteurAvoir = 0; }
+        try { config = Object.assign({ sumupKey: "" }, JSON.parse(localStorage.getItem('cfg_data')) || {}); } catch(e) { config = { sumupKey: "" }; }
+        stocks = stocks.map(s => Object.assign({ buyPrice: null, seuil: 3 }, s));
+    }
+    function saveStocks() { try { localStorage.setItem('stk_data', JSON.stringify(stocks)); } catch(e){} }
+    function saveVentes() { try { localStorage.setItem('vnt_data', JSON.stringify(ventes)); } catch(e){} }
+    function saveCompteur() {
+        try { localStorage.setItem('cpt_data', String(compteur)); } catch(e){}
+        try { localStorage.setItem('cpt_avoir_data', String(compteurAvoir)); } catch(e){}
+    }
+    function saveConfig() {
+        config.sumupKey = document.getElementById('cfg-sumup').value.trim();
+        try { localStorage.setItem('cfg_data', JSON.stringify(config)); } catch(e){}
+    }
+    function profilVide() { return { name: "", siret: "", address: "", email: "", phone: "", mention: "" }; }
+    function saveProfil() {
+        clearTimeout(profilTimeout);
+        profilTimeout = setTimeout(() => {
+            const v = id => document.getElementById(id).value;
+            profil.name = v('ent-name'); profil.siret = v('ent-siret'); profil.address = v('ent-address');
+            profil.email = v('ent-email'); profil.phone = v('ent-phone'); profil.mention = v('ent-mention');
+            try { localStorage.setItem('prf_data', JSON.stringify(profil)); } catch(e){}
+        }, 400);
+    }
+
+    // ---------- Format ----------
+    function fmt(n) { return Number(n).toFixed(2).replace('.', ',') + ' €'; }
+    function fmtPct(n) { return (n >= 0 ? '+' : '') + Number(n).toFixed(1).replace('.', ',') + ' %'; }
+    function esc(s) {
+        return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+    function lignesEntreprise(p) {
+        return [p.address && esc(p.address), p.siret && ('SIRET : ' + esc(p.siret)),
+                p.phone && ('Tél : ' + esc(p.phone)), p.email && esc(p.email)]
+            .filter(Boolean).map(l => '<div>' + l + '</div>').join('');
     }
 
     // ---------- Mode ----------
@@ -339,46 +381,44 @@
         const id = document.getElementById('sel-product').value;
         const item = stocks.find(p => p.id === id);
         if (item) {
-            document.getElementById('inp-price').value = item.price;
-            document.getElementById('inp-tva').value = item.tva;
+            document.getElementById('inp-price').value = item.price.toString().replace('.', ',');
+            document.getElementById('inp-tva').value = item.tva.toString().replace('.', ',');
         }
     }
 
     // ---------- Stock ----------
     function createStock() {
         const name = document.getElementById('stk-name').value.trim();
-        const price = parseFloat(document.getElementById('stk-price').value);
-        const buyPrice = parseFloat(document.getElementById('stk-buyprice').value);
-        const tva = parseFloat(document.getElementById('stk-tva').value);
+        const price = parseNumber(document.getElementById('stk-price').value);
+        const buyPrice = parseNumber(document.getElementById('stk-buyprice').value);
+        const tva = parseNumber(document.getElementById('stk-tva').value);
         const qty = parseInt(document.getElementById('stk-qty').value);
         const seuil = parseInt(document.getElementById('stk-seuil').value);
 
         if (!name || isNaN(price) || isNaN(qty) || isNaN(tva) || price < 0 || qty < 0 || tva < 0) {
-            alert("Erreur : Veuillez remplir toutes les cases correctement.");
+            showToast("⚠️ Veuillez remplir toutes les cases correctement.");
             return;
         }
 
         stocks.push({
             id: "ID-" + Date.now(), name, price,
             buyPrice: isNaN(buyPrice) ? null : buyPrice,
-            tva, qty,
-            seuil: isNaN(seuil) ? 3 : seuil
+            tva, qty, seuil: isNaN(seuil) ? 3 : seuil
         });
-        document.getElementById('stk-name').value = "";
-        document.getElementById('stk-price').value = "";
-        document.getElementById('stk-buyprice').value = "";
+        ['stk-name','stk-price','stk-buyprice','stk-qty','stk-seuil'].forEach(id => document.getElementById(id).value = "");
         document.getElementById('stk-tva').value = "20";
-        document.getElementById('stk-qty').value = "";
-        document.getElementById('stk-seuil').value = "";
         saveStocks();
-        render();
+        renderStock();
+        renderAlertes();
+        showToast("✅ Article créé");
     }
 
     function supprimerStock(id) {
         askConfirm("Supprimer cet article ?", "L'article sera retiré de l'inventaire (les factures passées ne changent pas).", "Supprimer", "Annuler", ok => {
             if (!ok) return;
             stocks = stocks.filter(p => p.id !== id);
-            saveStocks(); render();
+            saveStocks(); renderStock(); renderAlertes();
+            showToast("Article supprimé");
         });
     }
 
@@ -388,19 +428,19 @@
         const v = prompt("Nouveau seuil d'alerte pour " + item.name + " :", item.seuil || 3);
         if (v === null) return;
         const n = parseInt(v);
-        if (isNaN(n) || n < 0) { alert("Valeur invalide."); return; }
+        if (isNaN(n) || n < 0) { showToast("Valeur invalide."); return; }
         item.seuil = n;
-        saveStocks(); render();
+        saveStocks(); renderStock();
     }
 
     // ---------- Panier ----------
     function addPanier() {
         const qty = parseInt(document.getElementById('inp-qty').value);
-        const price = parseFloat(document.getElementById('inp-price').value);
-        const tva = parseFloat(document.getElementById('inp-tva').value);
+        const price = parseNumber(document.getElementById('inp-price').value);
+        const tva = parseNumber(document.getElementById('inp-tva').value);
 
         if (isNaN(price) || isNaN(qty) || isNaN(tva) || qty < 1 || price < 0 || tva < 0) {
-            alert("Indiquez un prix, une TVA et une quantité valides.");
+            showToast("⚠️ Indiquez un prix, une TVA et une quantité valides.");
             return;
         }
 
@@ -408,12 +448,12 @@
 
         if (isLibre) {
             name = document.getElementById('inp-name-libre').value.trim();
-            if (!name) { alert("Entrez le nom de l'article."); return; }
+            if (!name) { showToast("Entrez le nom de l'article."); return; }
         } else {
             const id = document.getElementById('sel-product').value;
             const idx = stocks.findIndex(p => p.id === id);
-            if (idx === -1) { alert("Sélectionnez un article."); return; }
-            if (stocks[idx].qty < qty) { alert("Stock insuffisant."); return; }
+            if (idx === -1) { showToast("Sélectionnez un article."); return; }
+            if (stocks[idx].qty < qty) { showToast("⚠️ Stock insuffisant."); return; }
             name = stocks[idx].name;
             pId = stocks[idx].id;
             buyPrice = stocks[idx].buyPrice;
@@ -423,12 +463,20 @@
         document.getElementById('inp-name-libre').value = "";
         document.getElementById('inp-price').value = "";
         document.getElementById('inp-qty').value = "1";
-        render();
+        renderPanier();
+        showToast("➕ Ajouté au panier");
     }
 
     function removePanier(idx) {
         panier.splice(idx, 1);
-        render();
+        renderPanier();
+    }
+
+    function viderPanier() {
+        if (panier.length === 0) return;
+        panier = [];
+        renderPanier();
+        showToast("Panier vidé");
     }
 
     // ---------- Totaux ----------
@@ -437,30 +485,12 @@
         list.forEach(i => {
             const ttcLigne = i.price * i.qty;
             const htLigne = ttcLigne / (1 + (i.tva / 100));
-            ttc += ttcLigne;
-            ht  += htLigne;
-            tva += (ttcLigne - htLigne);
+            ttc += ttcLigne; ht += htLigne; tva += (ttcLigne - htLigne);
         });
         return { ht, tva, ttc };
     }
 
-    // Marge brute : (prix vente HT - prix achat HT) * qté, uniquement si buyPrice connu
-    function computeMarge(items) {
-        let marge = 0, margeConnue = 0, caConnu = 0;
-        (items || []).forEach(i => {
-            const ttc = i.price * i.qty;
-            const ht = ttc / (1 + (i.tva / 100));
-            if (i.buyPrice != null && !isNaN(i.buyPrice)) {
-                const cout = i.buyPrice * i.qty;
-                marge += (ht - cout);
-                margeConnue += ht;
-                caConnu += ht;
-            }
-        });
-        return { marge, margeConnue, taux: margeConnue > 0 ? (marge / margeConnue) * 100 : 0 };
-    }
-
-    // ---------- Numérotation continue ----------
+    // ---------- Numérotation ----------
     function prochainNumero() {
         let max = compteur;
         ventes.forEach(v => {
@@ -481,7 +511,7 @@
 
     // ---------- Encaissement ----------
     function encaisser() {
-        if (panier.length === 0) { alert("Votre panier est vide."); return; }
+        if (panier.length === 0) { showToast("Votre panier est vide."); return; }
         const payMode = document.getElementById('sel-pay').value;
         if (payMode === "Carte (SumUp)" && window.AndroidBridge && AndroidBridge.sumupPay && config.sumupKey) {
             lancerSumup();
@@ -490,7 +520,7 @@
         if (payMode === "Carte (Up2pay)") {
             const t = computeTotaux(panier);
             askConfirm("Confirmer l'encaissement Up2pay ?",
-                "Avez-vous bien encaissé " + fmt(t.ttc) + " dans l'application Up2pay ?\nLa facture sera enregistrée dans Ma Compta.",
+                "Avez-vous bien encaissé " + fmt(t.ttc) + " dans l'application Up2pay ?",
                 "Oui, enregistrer", "Annuler",
                 ok => { if (ok) cloturer(payMode, panier, null); });
             return;
@@ -522,54 +552,47 @@
         ventes.push(nouvelleVente);
         if (lignes === panier) panier = [];
         saveVentes(); saveCompteur(); saveStocks();
-        render();
-        alert("Facture " + fRef + " clôturée.\nTTC : " + fmt(t.ttc));
+        renderAll();
+        showToast("✅ Facture " + fRef + " clôturée (" + fmt(t.ttc) + ")");
     }
 
-    // ---------- Avoir / remboursement ----------
+    // ---------- Avoir ----------
     function creerAvoir(idVente) {
         const v = ventes.find(x => x.id === idVente);
-        if (!v) { alert("Facture introuvable."); return; }
-        if (v.avoir) { alert("Cette facture est déjà un avoir."); return; }
-        if (v.annulee) { alert("Cette facture a déjà un avoir."); return; }
+        if (!v) { showToast("Facture introuvable."); return; }
+        if (v.avoir || v.annulee) { showToast("Cette facture a déjà un avoir."); return; }
         askConfirm("Créer un avoir ?",
-            "Un avoir " + "AV-" + " sera créé pour " + fmt(v.total) + ".\n" +
-            "Les articles seront remis en stock et la vente sera annulée comptablement.\n" +
-            "La facture d'origine reste dans l'historique (traçabilité).",
+            "Un avoir sera créé pour " + fmt(v.total) + ". Les articles seront remis en stock.",
             "Créer l'avoir", "Annuler",
             ok => {
                 if (!ok) return;
                 const numAv = prochainNumeroAvoir();
                 compteurAvoir = numAv;
                 const refAv = "AV-" + String(numAv).padStart(6, "0");
-                // Remise en stock
+                
                 (v.items || []).forEach(item => {
-                    if (!item.name) return;
                     const s = stocks.find(p => p.name === item.name);
                     if (s) s.qty += item.qty;
                 });
-                // On marque la vente d'origine comme annulée
                 v.annulee = true;
                 v.avoirId = refAv;
-                // On crée un avoir (montants positifs, mais la logique de bilan le traitera en négatif)
-                const avoir = {
+                
+                ventes.push({
                     id: refAv, num: numAv,
                     date: new Date().toLocaleString('fr-FR'), dateTs: Date.now(),
                     ht: v.ht, tva: v.tva, total: v.total,
                     payment: v.payment,
                     profil: Object.assign({}, profil),
                     items: (v.items || []).map(i => ({ ...i })),
-                    avoir: true,
-                    refVente: v.id
-                };
-                ventes.push(avoir);
+                    avoir: true, refVente: v.id
+                });
                 saveVentes(); saveCompteur(); saveStocks();
-                render();
-                alert("Avoir " + refAv + " créé.\nTotal : " + fmt(v.total));
+                renderAll();
+                showToast("✅ Avoir " + refAv + " créé");
             });
     }
 
-    // ---------- Paiement SumUp ----------
+    // ---------- SumUp ----------
     function lirePending() {
         try { return JSON.parse(localStorage.getItem('sumup_pending')); } catch(e) { return null; }
     }
@@ -582,77 +605,66 @@
         if (!box) return;
         box.className = p ? "box" : "box hidden";
         if (p) document.getElementById('pending-txt').textContent =
-            fmt(p.total) + " — lancé le " + new Date(p.ts).toLocaleString('fr-FR') +
-            ". Aucune facture n'est créée tant que le paiement n'est pas confirmé.";
+            fmt(p.total) + " — lancé le " + new Date(p.ts).toLocaleString('fr-FR');
     }
-
     function lancerSumup() {
-        if (lirePending()) { alert("Un paiement SumUp est déjà en attente : validez-le ou abandonnez-le d'abord."); return; }
+        if (lirePending()) { showToast("Un paiement SumUp est déjà en attente."); return; }
         const t = computeTotaux(panier);
-        const total = t.ttc.toFixed(2);
         const pending = {
-            ts: Date.now(), total: total,
+            ts: Date.now(), total: t.ttc.toFixed(2),
             lignes: panier.map(i => ({ pId: i.pId, name: i.name, qty: i.qty, price: i.price, tva: i.tva, buyPrice: i.buyPrice, total: i.total }))
         };
         try { localStorage.setItem('sumup_pending', JSON.stringify(pending)); }
-        catch(e) { alert("Impossible de préparer le paiement."); return; }
+        catch(e) { showToast("Impossible de préparer le paiement."); return; }
         renderPending();
-        AndroidBridge.sumupPay(config.sumupKey, total, "Ma Compta");
+        AndroidBridge.sumupPay(config.sumupKey, pending.total, "Ma Compta");
     }
-
     function finaliserPending(extra) {
         const p = lirePending();
         if (!p) return;
         effacerPending();
         cloturer("Carte (SumUp)", p.lignes, extra);
     }
-
     function traiterRetourSumup(q) {
         if (!q) return;
         const p = lirePending();
-        if (!p) { if (window.AndroidBridge && AndroidBridge.toast) AndroidBridge.toast("Retour SumUp ignoré : aucun paiement en attente"); return; }
+        if (!p) { if (window.AndroidBridge && AndroidBridge.toast) AndroidBridge.toast("Aucun paiement en attente"); return; }
         const params = new URLSearchParams(q);
         const statut = (params.get('smp-status') || '').toLowerCase();
         if (statut === 'success') {
             finaliserPending({ tx: params.get('smp-tx-code') || "" });
         } else if (statut) {
             effacerPending();
-            alert("Paiement SumUp non abouti (" + (params.get('smp-failure-cause') || params.get('smp-message') || statut) + ").\nAucune facture n'a été créée.");
-        } else {
-            alert("Réponse SumUp inattendue. Vérifiez dans l'application SumUp, puis validez ou abandonnez le paiement en attente.");
+            showToast("Paiement SumUp non abouti.");
         }
     }
     window.__onSumupResult = traiterRetourSumup;
     window.__onSumupError = function(code) {
         effacerPending();
-        alert(code === 'noapp' ? "L'application SumUp est introuvable sur ce téléphone." : "Paramètres de paiement invalides.");
+        showToast(code === 'noapp' ? "Application SumUp introuvable." : "Paramètres invalides.");
     };
-
     function validerPending() {
         const p = lirePending(); if (!p) return;
-        askConfirm("Paiement reçu ?", "Confirmez-vous avoir encaissé " + fmt(p.total) + " dans l'application SumUp ?\nVérifiez-le dans SumUp avant de valider.",
+        askConfirm("Paiement reçu ?", "Confirmez-vous avoir encaissé " + fmt(p.total) + " dans SumUp ?",
             "Oui, clôturer", "Non", ok => { if (ok) finaliserPending({ tx: "", manuel: true }); });
     }
     function abandonnerPending() {
-        askConfirm("Abandonner ?", "Aucune facture ne sera créée pour ce paiement.", "Abandonner", "Retour", ok => { if (ok) effacerPending(); });
+        askConfirm("Abandonner ?", "Aucune facture ne sera créée.", "Abandonner", "Retour", ok => { if (ok) effacerPending(); });
     }
 
     // ---------- Sauvegarde / Restauration ----------
     function buildBackup() {
         return JSON.stringify({
             app: "MaCompta", version: 2, date: new Date().toISOString(),
-            compteur: compteur, compteurAvoir: compteurAvoir,
-            config: config, profil: profil, stocks: stocks, ventes: ventes
+            compteur, compteurAvoir, config, profil, stocks, ventes
         }, null, 1);
     }
-
     function marquerSauvegarde() {
         try { localStorage.setItem('bak_last', String(Date.now())); } catch(e){}
         renderBackupStatus();
     }
-
     function sauvegarder() {
-        const nom = "MaCompta_sauvegarde_" + new Date().toISOString().slice(0, 10) + ".json";
+        const nom = "MaCompta_" + new Date().toISOString().slice(0, 10) + ".json";
         const data = buildBackup();
         if (window.AndroidBridge && AndroidBridge.saveBackup) {
             AndroidBridge.saveBackup(nom, data);
@@ -662,14 +674,13 @@
             a.download = nom;
             a.click();
             marquerSauvegarde();
+            showToast("💾 Sauvegarde téléchargée");
         }
     }
-
     window.__onBackupSaved = function(ok) {
-        if (ok) { marquerSauvegarde(); alert("Sauvegarde enregistrée.\nConservez-la ailleurs que sur ce téléphone (Drive, e-mail, ordinateur)."); }
-        else { alert("Échec de la sauvegarde. Réessayez."); }
+        if (ok) { marquerSauvegarde(); showToast("✅ Sauvegarde enregistrée"); }
+        else { showToast("❌ Échec de la sauvegarde"); }
     };
-
     function restaurer() {
         if (window.AndroidBridge && AndroidBridge.pickBackup) {
             AndroidBridge.pickBackup();
@@ -685,41 +696,36 @@
             inp.click();
         }
     }
-
     window.__onBackupLoaded = function(text) {
         let d = null;
         try { d = text ? JSON.parse(text) : null; } catch(e) { d = null; }
         if (!d || d.app !== "MaCompta" || !Array.isArray(d.stocks) || !Array.isArray(d.ventes)) {
-            alert("Fichier invalide : ce n'est pas une sauvegarde Ma Compta.");
-            return;
+            showToast("Fichier invalide."); return;
         }
         const jour = d.date ? new Date(d.date).toLocaleString('fr-FR') : "date inconnue";
-        askConfirm("Restaurer la sauvegarde ?",
-            "Sauvegarde du " + jour + " : " + d.ventes.length + " facture(s), " + d.stocks.length + " article(s).\n\n" +
-            "Les données actuelles seront REMPLACÉES.",
+        askConfirm("Restaurer ?", "Sauvegarde du " + jour + " : " + d.ventes.length + " facture(s).\nLes données actuelles seront REMPLACÉES.",
             "Restaurer", "Annuler", (ok) => {
                 if (!ok) return;
                 stocks = (d.stocks || []).map(s => Object.assign({ buyPrice: null, seuil: 3 }, s));
                 ventes = d.ventes || [];
-                profil = Object.assign(profilVide(), (d.profil && typeof d.profil === 'object') ? d.profil : {});
+                profil = Object.assign(profilVide(), d.profil || {});
                 compteur = Math.max(compteur, parseInt(d.compteur) || 0);
                 compteurAvoir = Math.max(compteurAvoir, parseInt(d.compteurAvoir) || 0);
                 panier = [];
-                if (d.config && typeof d.config === 'object') { config = Object.assign({ sumupKey: "" }, d.config); saveConfig(); }
+                if (d.config) { config = Object.assign({ sumupKey: "" }, d.config); saveConfig(); }
                 saveStocks(); saveVentes(); saveCompteur();
                 try { localStorage.setItem('prf_data', JSON.stringify(profil)); } catch(e){}
                 marquerSauvegarde();
-                render();
-                alert("Sauvegarde restaurée.");
+                renderAll();
+                showToast("✅ Sauvegarde restaurée");
             });
     };
-
     function renderBackupStatus() {
         const el = document.getElementById('bak-status');
         let last = 0;
         try { last = parseInt(localStorage.getItem('bak_last')) || 0; } catch(e){}
         if (!last) {
-            el.textContent = ventes.length ? "⚠️ Aucune sauvegarde effectuée : vos données sont uniquement sur ce téléphone." : "Aucune sauvegarde pour l'instant.";
+            el.textContent = ventes.length ? "⚠️ Aucune sauvegarde effectuée." : "Aucune sauvegarde.";
             el.className = "bak-status" + (ventes.length ? " alerte" : "");
             return;
         }
@@ -728,28 +734,19 @@
             (depuis ? " — ⚠️ " + depuis + " facture(s) depuis" : " — à jour");
         el.className = "bak-status" + (depuis ? " alerte" : "");
     }
-
-    // ---------- Reset ----------
     function resetAll() {
-        askConfirm("Réinitialiser ?",
-            "Supprimer TOUTES les données (stock, ventes, profil) ?\nLes compteurs de numérotation sont conservés.\nAction irréversible.",
-            "Oui, supprimer", "Annuler", (ok) => {
-                if (!ok) return;
-                askConfirm("Confirmation finale", "Vraiment sûr ? Faites une sauvegarde avant.", "Confirmer", "Annuler", (ok2) => {
-                    if (!ok2) return;
-                    stocks = []; ventes = []; panier = []; profil = profilVide();
-                    try {
-                        localStorage.removeItem('stk_data');
-                        localStorage.removeItem('vnt_data');
-                        localStorage.removeItem('prf_data');
-                        localStorage.removeItem('sumup_pending');
-                    } catch(e){}
-                    document.getElementById('ent-name').value = "";
-                    document.getElementById('ent-siret').value = "";
-                    render();
-                    if (window.AndroidBridge && AndroidBridge.toast) AndroidBridge.toast("Données effacées");
-                });
+        askConfirm("Réinitialiser ?", "Supprimer TOUTES les données ? Action irréversible.", "Oui, supprimer", "Annuler", (ok) => {
+            if (!ok) return;
+            askConfirm("Confirmation finale", "Vraiment sûr ? Faites une sauvegarde avant.", "Confirmer", "Annuler", (ok2) => {
+                if (!ok2) return;
+                stocks = []; ventes = []; panier = []; profil = profilVide();
+                try {
+                    ['stk_data','vnt_data','prf_data','sumup_pending'].forEach(k => localStorage.removeItem(k));
+                } catch(e){}
+                renderAll();
+                showToast("Données effacées");
             });
+        });
     }
 
     // ---------- Export PDF ----------
@@ -757,62 +754,32 @@
         const rows = v.items.map(i => {
             const ttc = i.price * i.qty;
             const ht = ttc / (1 + i.tva / 100);
-            return `<tr>
-                <td>${esc(i.name)}</td>
-                <td style="text-align:center">${i.qty}</td>
-                <td style="text-align:right">${fmt(i.price)}</td>
-                <td style="text-align:center">${i.tva}%</td>
-                <td style="text-align:right">${fmt(ht)}</td>
-                <td style="text-align:right">${fmt(ttc)}</td>
-            </tr>`;
+            return `<tr><td>${esc(i.name)}</td><td style="text-align:center">${i.qty}</td><td style="text-align:right">${fmt(i.price)}</td><td style="text-align:center">${i.tva}%</td><td style="text-align:right">${fmt(ht)}</td><td style="text-align:right">${fmt(ttc)}</td></tr>`;
         }).join('');
         const titre = v.avoir ? 'Avoir ' + esc(v.id) : 'Facture ' + esc(v.id);
-        return `<!DOCTYPE html><html><head><meta charset="UTF-8">
-        <style>
+        return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
             body{font-family:sans-serif;padding:20px;font-size:12px;color:#1e293b}
-            h1{font-size:20px;margin-bottom:4px}
-            .hdr{display:flex;justify-content:space-between;border-bottom:2px solid #2563eb;padding-bottom:10px;margin-bottom:15px}
-            .hdr .right{text-align:right}
-            table{width:100%;border-collapse:collapse;margin-top:10px}
+            h1{font-size:20px;margin-bottom:4px}.hdr{display:flex;justify-content:space-between;border-bottom:2px solid #2563eb;padding-bottom:10px;margin-bottom:15px}
+            .hdr .right{text-align:right}table{width:100%;border-collapse:collapse;margin-top:10px}
             th{background:#f1f5f9;padding:6px;text-align:left;font-size:11px;border-bottom:1px solid #cbd5e1}
-            td{padding:6px;border-bottom:1px solid #e2e8f0}
-            .tot{margin-top:15px;text-align:right;font-size:13px}
-            .tot div{padding:3px 0}
-            .tot .ttc{font-weight:bold;font-size:15px;color:#166534;border-top:1px solid #cbd5e1;padding-top:6px}
+            td{padding:6px;border-bottom:1px solid #e2e8f0}.tot{margin-top:15px;text-align:right;font-size:13px}
+            .tot div{padding:3px 0}.tot .ttc{font-weight:bold;font-size:15px;color:#166534;border-top:1px solid #cbd5e1;padding-top:6px}
             .footer{margin-top:30px;font-size:10px;color:#94a3b8;text-align:center}
             .avoir-badge{background:#fee2e2;color:#991b1b;padding:4px 10px;border-radius:6px;font-weight:bold;display:inline-block;margin-bottom:8px}
         </style></head><body>
         ${v.avoir ? '<div class="avoir-badge">AVOIR — Remboursement de la facture ' + esc(v.refVente || '') + '</div>' : ''}
-        <div class="hdr">
-            <div><h1>${esc(v.profil.name || "Mon Établissement")}</h1>
-                ${lignesEntreprise(v.profil)}</div>
-            <div class="right"><h1>${titre}</h1>
-                <div>${esc(v.date)}</div>
-                <div>Paiement : ${esc(v.payment)}</div>${v.sumup && v.sumup.tx ? '<div>Réf. SumUp : ' + esc(v.sumup.tx) + '</div>' : ''}</div>
-        </div>
-        <table>
-            <thead><tr>
-                <th>Désignation</th><th style="text-align:center">Qté</th>
-                <th style="text-align:right">P.U. TTC</th><th style="text-align:center">TVA</th>
-                <th style="text-align:right">HT</th><th style="text-align:right">TTC</th>
-            </tr></thead>
-            <tbody>${rows}</tbody>
-        </table>
-        <div class="tot">
-            <div>Total HT : ${fmt(v.ht)}</div>
-            <div>Total TVA : ${fmt(v.tva)}</div>
-            <div class="ttc">${v.avoir ? 'TOTAL AVOIR TTC' : 'TOTAL TTC'} : ${fmt(v.total)}</div>
-        </div>
-        <div class="footer">${v.profil.mention ? esc(v.profil.mention) : "Document généré par Ma Compta"}</div>
-        </body></html>`;
+        <div class="hdr"><div><h1>${esc(v.profil.name || "Mon Établissement")}</h1>${lignesEntreprise(v.profil)}</div>
+        <div class="right"><h1>${titre}</h1><div>${esc(v.date)}</div><div>Paiement : ${esc(v.payment)}</div>${v.sumup && v.sumup.tx ? '<div>Réf. SumUp : ' + esc(v.sumup.tx) + '</div>' : ''}</div></div>
+        <table><thead><tr><th>Désignation</th><th style="text-align:center">Qté</th><th style="text-align:right">P.U. TTC</th><th style="text-align:center">TVA</th><th style="text-align:right">HT</th><th style="text-align:right">TTC</th></tr></thead>
+        <tbody>${rows}</tbody></table>
+        <div class="tot"><div>Total HT : ${fmt(v.ht)}</div><div>Total TVA : ${fmt(v.tva)}</div><div class="ttc">${v.avoir ? 'TOTAL AVOIR TTC' : 'TOTAL TTC'} : ${fmt(v.total)}</div></div>
+        <div class="footer">${v.profil.mention ? esc(v.profil.mention) : "Document généré par Ma Compta"}</div></body></html>`;
     }
-
     function exportPdf(id) {
         const v = ventes.find(x => x.id === id);
-        if (!v) { alert("Facture introuvable"); return; }
+        if (!v) { showToast("Facture introuvable"); return; }
         if (!window.AndroidBridge || !AndroidBridge.exportPdfAndShare) {
-            alert("Export PDF disponible uniquement dans l'application Android.");
-            return;
+            showToast("Export PDF disponible uniquement dans l'application Android."); return;
         }
         AndroidBridge.exportPdfAndShare(buildFactureHtml(v), (v.avoir ? "Avoir_" : "Facture_") + v.id + ".pdf");
     }
@@ -823,7 +790,6 @@
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
     function fmtJour(iso) { return new Date(iso + 'T12:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
-
     function plage(preset) {
         const now = new Date(), y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
         const iso = dt => jourLocal(dt.getTime());
@@ -858,13 +824,11 @@
         if (a > b) { const t = a; a = b; b = t; }
         return [a, b];
     }
-
     function calculerBilan(a, b) {
         const L = ventes.filter(v => v.dateTs && jourLocal(v.dateTs) >= a && jourLocal(v.dateTs) <= b).sort((x, y) => x.dateTs - y.dateTs);
         const tot = { ht: 0, tva: 0, ttc: 0 }, parMode = {}, parTaux = {}, parJour = {};
         let marge = 0, margeConnue = 0;
         L.forEach(v => {
-            // Un avoir vient en déduction
             const signe = v.avoir ? -1 : 1;
             tot.ht += signe * v.ht; tot.tva += signe * v.tva; tot.ttc += signe * v.total;
             const m = parMode[v.payment] = parMode[v.payment] || { n: 0, ttc: 0 };
@@ -883,7 +847,6 @@
         });
         return { L, tot, parMode, parTaux, parJour, marge, margeConnue, tauxMarge: margeConnue > 0 ? (marge / margeConnue) * 100 : 0 };
     }
-
     function renderBilanApercu() {
         const el = document.getElementById('bil-apercu');
         if (!el || !document.getElementById('bil-from')) return;
@@ -892,7 +855,6 @@
         el.innerHTML = '<div class="item-row"><span><strong>' + b.L.length + ' facture(s)</strong></span><strong>' + fmt(b.tot.ttc) + '</strong></div>' +
             Object.keys(b.parMode).map(m => '<div class="item-row"><small>' + esc(m) + ' (' + b.parMode[m].n + ')</small><span>' + fmt(b.parMode[m].ttc) + '</span></div>').join('');
     }
-
     function buildBilanHtml(a, b, detail) {
         const B = calculerBilan(a, b), unJour = a === b;
         const titre = unJour ? "Bilan de la journée" : "Bilan de période";
@@ -900,52 +862,33 @@
                                : "du " + fmtJour(a) + " au " + fmtJour(b);
         const modes = Object.keys(B.parMode).map(m => `<tr><td>${esc(m)}</td><td style="text-align:center">${B.parMode[m].n}</td><td style="text-align:right">${fmt(B.parMode[m].ttc)}</td></tr>`).join('');
         const taux = Object.keys(B.parTaux).sort((x, y) => parseFloat(x) - parseFloat(y)).map(k => `<tr><td>${esc(k)} %</td><td style="text-align:right">${fmt(B.parTaux[k].ht)}</td><td style="text-align:right">${fmt(B.parTaux[k].tva)}</td></tr>`).join('');
-        const jours = unJour ? "" : `<h3>Par jour</h3><table><thead><tr><th>Date</th><th style="text-align:center">Factures</th><th style="text-align:right">Total TTC</th></tr></thead><tbody>${
-            Object.keys(B.parJour).sort().map(k => `<tr><td>${esc(fmtJour(k))}</td><td style="text-align:center">${B.parJour[k].n}</td><td style="text-align:right">${fmt(B.parJour[k].ttc)}</td></tr>`).join('')}</tbody></table>`;
-        const lignes = !detail ? "" : `<h3>Détail des factures</h3><table><thead><tr><th>N°</th><th>Date</th><th>Paiement</th><th style="text-align:right">TTC</th></tr></thead><tbody>${
-            B.L.map(v => `<tr><td>${esc(v.id)}${v.avoir ? ' (avoir)' : ''}</td><td>${esc(new Date(v.dateTs).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }))}</td><td>${esc(v.payment)}</td><td style="text-align:right">${fmt(v.total)}</td></tr>`).join('')}</tbody></table>`;
+        const jours = unJour ? "" : `<h3>Par jour</h3><table><thead><tr><th>Date</th><th style="text-align:center">Factures</th><th style="text-align:right">Total TTC</th></tr></thead><tbody>${Object.keys(B.parJour).sort().map(k => `<tr><td>${esc(fmtJour(k))}</td><td style="text-align:center">${B.parJour[k].n}</td><td style="text-align:right">${fmt(B.parJour[k].ttc)}</td></tr>`).join('')}</tbody></table>`;
+        const lignes = !detail ? "" : `<h3>Détail des factures</h3><table><thead><tr><th>N°</th><th>Date</th><th>Paiement</th><th style="text-align:right">TTC</th></tr></thead><tbody>${B.L.map(v => `<tr><td>${esc(v.id)}${v.avoir ? ' (avoir)' : ''}</td><td>${esc(new Date(v.dateTs).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }))}</td><td>${esc(v.payment)}</td><td style="text-align:right">${fmt(v.total)}</td></tr>`).join('')}</tbody></table>`;
         const margeBloc = B.margeConnue > 0 ? `<h3>Marge brute</h3><table><tbody>
             <tr><td>CA HT connu</td><td style="text-align:right">${fmt(B.margeConnue)}</td></tr>
             <tr><td>Marge brute</td><td style="text-align:right">${fmt(B.marge)}</td></tr>
-            <tr><td>Taux de marge</td><td style="text-align:right">${B.tauxMarge.toFixed(1)} %</td></tr>
-            </tbody></table>` : "";
-        return `<!DOCTYPE html><html><head><meta charset="UTF-8">
-        <style>
-            body{font-family:sans-serif;padding:20px;font-size:12px;color:#1e293b}
-            h1{font-size:20px;margin-bottom:4px}
-            h3{font-size:13px;margin:18px 0 4px 0;color:#2563eb}
-            .hdr{display:flex;justify-content:space-between;border-bottom:2px solid #2563eb;padding-bottom:10px;margin-bottom:10px}
-            .hdr .right{text-align:right}
-            table{width:100%;border-collapse:collapse}
-            th{background:#f1f5f9;padding:6px;text-align:left;font-size:11px;border-bottom:1px solid #cbd5e1}
-            td{padding:6px;border-bottom:1px solid #e2e8f0}
-            .ttc{font-weight:bold;font-size:15px;color:#166534;margin-top:10px;text-align:right}
+            <tr><td>Taux de marge</td><td style="text-align:right">${B.tauxMarge.toFixed(1).replace('.',',')} %</td></tr></tbody></table>` : "";
+        return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+            body{font-family:sans-serif;padding:20px;font-size:12px;color:#1e293b}h1{font-size:20px;margin-bottom:4px}h3{font-size:13px;margin:18px 0 4px 0;color:#2563eb}
+            .hdr{display:flex;justify-content:space-between;border-bottom:2px solid #2563eb;padding-bottom:10px;margin-bottom:10px}.hdr .right{text-align:right}
+            table{width:100%;border-collapse:collapse}th{background:#f1f5f9;padding:6px;text-align:left;font-size:11px;border-bottom:1px solid #cbd5e1}
+            td{padding:6px;border-bottom:1px solid #e2e8f0}.ttc{font-weight:bold;font-size:15px;color:#166534;margin-top:10px;text-align:right}
             .footer{margin-top:30px;font-size:10px;color:#94a3b8;text-align:center}
         </style></head><body>
-        <div class="hdr">
-            <div><h1>${esc(profil.name || "Mon Établissement")}</h1>${lignesEntreprise(profil)}</div>
-            <div class="right"><h1>${titre}</h1><div>${esc(periode)}</div>
-                <div>Édité le ${esc(new Date().toLocaleString('fr-FR'))}</div></div>
-        </div>
-        <div>${B.L.length} facture(s) : du ${esc(B.L[0].id)} au ${esc(B.L[B.L.length - 1].id)}</div>
+        <div class="hdr"><div><h1>${esc(profil.name || "Mon Établissement")}</h1>${lignesEntreprise(profil)}</div>
+        <div class="right"><h1>${titre}</h1><div>${esc(periode)}</div><div>Édité le ${esc(new Date().toLocaleString('fr-FR'))}</div></div></div>
+        <div>${B.L.length} facture(s) : du ${esc(B.L[0]?.id || 'N/A')} au ${esc(B.L[B.L.length - 1]?.id || 'N/A')}</div>
         <div>Total HT : ${fmt(B.tot.ht)} — Total TVA : ${fmt(B.tot.tva)}</div>
         <div class="ttc">TOTAL TTC : ${fmt(B.tot.ttc)}</div>
-        <h3>TVA par taux</h3>
-        <table><thead><tr><th>Taux</th><th style="text-align:right">Base HT</th><th style="text-align:right">TVA</th></tr></thead><tbody>${taux}</tbody></table>
-        <h3>Par mode de paiement</h3>
-        <table><thead><tr><th>Mode</th><th style="text-align:center">Nb</th><th style="text-align:right">Total TTC</th></tr></thead><tbody>${modes}</tbody></table>
+        <h3>TVA par taux</h3><table><thead><tr><th>Taux</th><th style="text-align:right">Base HT</th><th style="text-align:right">TVA</th></tr></thead><tbody>${taux}</tbody></table>
+        <h3>Par mode de paiement</h3><table><thead><tr><th>Mode</th><th style="text-align:center">Nb</th><th style="text-align:right">Total TTC</th></tr></thead><tbody>${modes}</tbody></table>
         ${margeBloc}${jours}${lignes}
-        <div class="footer">Document de gestion établi par Ma Compta : il ne constitue pas une clôture de caisse certifiée.</div>
-        </body></html>`;
+        <div class="footer">Document de gestion établi par Ma Compta.</div></body></html>`;
     }
-
     function editerBilan() {
         const r = lirePlage(), a = r[0], b = r[1];
-        if (!calculerBilan(a, b).L.length) { alert("Aucune vente enregistrée sur cette période."); return; }
-        if (!window.AndroidBridge || !AndroidBridge.exportPdfAndShare) {
-            alert("Export PDF disponible uniquement dans l'application Android.");
-            return;
-        }
+        if (!calculerBilan(a, b).L.length) { showToast("Aucune vente sur cette période."); return; }
+        if (!window.AndroidBridge || !AndroidBridge.exportPdfAndShare) { showToast("Export PDF indisponible."); return; }
         const detail = document.getElementById('bil-detail').checked !== false;
         AndroidBridge.exportPdfAndShare(buildBilanHtml(a, b, detail), "Bilan_" + (a === b ? a : a + "_au_" + b) + ".pdf");
     }
@@ -958,38 +901,21 @@
     }
     function buildCsvPeriode(a, b) {
         const B = calculerBilan(a, b);
-        // Section 1 : factures
         let csv = "Numéro;Date;Type;Mode paiement;Total HT;Total TVA;Total TTC;Articles;Réf SumUp\n";
         B.L.forEach(v => {
-            const arts = (v.items || []).map(i => i.qty + "x " + i.name + " (" + fmt(i.price) + ", TVA " + i.tva + "%)").join(" | ");
-            csv += [
-                csvCell(v.id),
-                csvCell(v.date),
-                v.avoir ? "Avoir" : "Facture",
-                csvCell(v.payment),
-                csvCell(v.ht.toFixed(2)),
-                csvCell(v.tva.toFixed(2)),
-                csvCell((v.avoir ? -v.total : v.total).toFixed(2)),
-                csvCell(arts),
-                csvCell(v.sumup && v.sumup.tx ? v.sumup.tx : "")
-            ].join(";") + "\n";
+            const arts = (v.items || []).map(i => i.qty + "x " + i.name + " (" + fmt(i.price) + ")").join(" | ");
+            csv += [csvCell(v.id), csvCell(v.date), v.avoir ? "Avoir" : "Facture", csvCell(v.payment),
+                csvCell(v.ht.toFixed(2)), csvCell(v.tva.toFixed(2)), csvCell((v.avoir ? -v.total : v.total).toFixed(2)),
+                csvCell(arts), csvCell(v.sumup && v.sumup.tx ? v.sumup.tx : "")].join(";") + "\n";
         });
-        // Section 2 : récap par mode de paiement
         csv += "\nRécapitulatif par mode de paiement\nMode;Nombre;Total TTC\n";
-        Object.keys(B.parMode).forEach(m => {
-            csv += [csvCell(m), csvCell(B.parMode[m].n), csvCell(B.parMode[m].ttc.toFixed(2))].join(";") + "\n";
-        });
-        // Section 3 : récap TVA
+        Object.keys(B.parMode).forEach(m => { csv += [csvCell(m), csvCell(B.parMode[m].n), csvCell(B.parMode[m].ttc.toFixed(2))].join(";") + "\n"; });
         csv += "\nRécapitulatif TVA\nTaux;Base HT;TVA\n";
-        Object.keys(B.parTaux).sort((x,y)=>parseFloat(x)-parseFloat(y)).forEach(k => {
-            csv += [csvCell(k + " %"), csvCell(B.parTaux[k].ht.toFixed(2)), csvCell(B.parTaux[k].tva.toFixed(2))].join(";") + "\n";
-        });
-        // Section 4 : totaux
+        Object.keys(B.parTaux).sort((x,y)=>parseFloat(x)-parseFloat(y)).forEach(k => { csv += [csvCell(k + " %"), csvCell(B.parTaux[k].ht.toFixed(2)), csvCell(B.parTaux[k].tva.toFixed(2))].join(";") + "\n"; });
         csv += "\nTotaux\nCA HT;CA TVA;CA TTC\n";
         csv += [csvCell(B.tot.ht.toFixed(2)), csvCell(B.tot.tva.toFixed(2)), csvCell(B.tot.ttc.toFixed(2))].join(";") + "\n";
         return csv;
     }
-
     function telechargerTexte(nom, contenu, mime) {
         if (window.AndroidBridge && AndroidBridge.saveTextFile) {
             AndroidBridge.saveTextFile(nom, contenu, mime || "text/csv");
@@ -998,18 +924,17 @@
             a.href = URL.createObjectURL(new Blob(["\ufeff" + contenu], { type: (mime || "text/csv") + ";charset=utf-8" }));
             a.download = nom;
             a.click();
+            showToast("📊 Fichier téléchargé");
         }
     }
-
     function exportCsvPeriode() {
         const r = lirePlage();
         const csv = buildCsvPeriode(r[0], r[1]);
-        if (!csv) { alert("Aucune donnée."); return; }
+        if (!csv || !calculerBilan(r[0], r[1]).L.length) { showToast("Aucune donnée."); return; }
         telechargerTexte("MaCompta_" + (r[0] === r[1] ? r[0] : r[0] + "_au_" + r[1]) + ".csv", csv, "text/csv");
     }
-
     function exporterToutCsv() {
-        if (!ventes.length) { alert("Aucune facture à exporter."); return; }
+        if (!ventes.length) { showToast("Aucune facture à exporter."); return; }
         const a = jourLocal(ventes[0].dateTs || Date.now());
         const b = jourLocal(Date.now());
         telechargerTexte("MaCompta_tout_" + a + "_au_" + b + ".csv", buildCsvPeriode(a, b), "text/csv");
@@ -1021,13 +946,9 @@
         const fin = new Date(annee, mois + 1, 0, 23, 59, 59, 999).getTime();
         const L = ventes.filter(v => v.dateTs >= debut && v.dateTs <= fin);
         let ca = 0, tva = 0, nb = 0;
-        L.forEach(v => {
-            const signe = v.avoir ? -1 : 1;
-            ca += signe * v.total; tva += signe * v.tva; nb += signe;
-        });
+        L.forEach(v => { const signe = v.avoir ? -1 : 1; ca += signe * v.total; tva += signe * v.tva; nb += signe; });
         return { ca, tva, nb };
     }
-
     function renderTableauDeBord() {
         const now = new Date();
         const moisCourant = statsDuMois(now.getFullYear(), now.getMonth());
@@ -1035,65 +956,51 @@
         document.getElementById('kpi-ca-mois').textContent = fmt(moisCourant.ca);
         document.getElementById('kpi-tva-mois').textContent = fmt(moisCourant.tva);
 
-        // Delta CA
         const deltaEl = document.getElementById('kpi-ca-delta');
         if (moisPrec.ca > 0) {
             const delta = ((moisCourant.ca - moisPrec.ca) / moisPrec.ca) * 100;
-            deltaEl.textContent = fmtPct(delta) + " vs mois dernier (" + fmt(moisPrec.ca) + ")";
+            deltaEl.textContent = fmtPct(delta) + " vs mois dernier";
             deltaEl.className = "kpi-delta " + (delta >= 0 ? "delta-up" : "delta-down");
         } else {
-            deltaEl.textContent = "Pas de comparaison (mois dernier vide)";
+            deltaEl.textContent = "Pas de comparaison";
             deltaEl.className = "kpi-delta";
         }
 
-        // Marge du mois
         const a = jourLocal(new Date(now.getFullYear(), now.getMonth(), 1).getTime());
         const b = jourLocal(Date.now());
         const B = calculerBilan(a, b);
         document.getElementById('kpi-marge-mois').textContent = fmt(B.marge);
         const tauxEl = document.getElementById('kpi-marge-taux');
         if (B.margeConnue > 0) {
-            tauxEl.textContent = "Taux de marge : " + B.tauxMarge.toFixed(1) + " %";
+            tauxEl.textContent = "Taux : " + B.tauxMarge.toFixed(1).replace('.',',') + " %";
             tauxEl.className = "kpi-delta " + (B.tauxMarge >= 0 ? "delta-up" : "delta-down");
         } else {
-            tauxEl.textContent = "Renseignez les prix d'achat pour calculer la marge";
+            tauxEl.textContent = "Renseignez les prix d'achat";
             tauxEl.className = "kpi-delta";
         }
 
-        // Panier moyen + nb factures
-        document.getElementById('kpi-panier').textContent = moisCourant.nb > 0 ? fmt(moisCourant.ca / moisCourant.nb) : "0.00 €";
-        document.getElementById('kpi-nb-factures').textContent = moisCourant.nb + " facture(s) ce mois";
+        document.getElementById('kpi-panier').textContent = moisCourant.nb > 0 ? fmt(moisCourant.ca / moisCourant.nb) : "0,00 €";
+        document.getElementById('kpi-nb-factures').textContent = Math.abs(moisCourant.nb) + " facture(s) ce mois";
 
-        // À rapprocher
         const rap = document.getElementById('top-rapprochement');
         const modesCarte = Object.keys(B.parMode).filter(m => m.indexOf('Carte') === 0 || m === 'Apple Pay' || m === 'Google Pay');
-        if (!modesCarte.length) {
-            rap.innerHTML = '<div class="empty">Aucun paiement carte ce mois</div>';
-        } else {
-            rap.innerHTML = modesCarte.map(m => {
-                const d = B.parMode[m];
-                return '<div><span><span class="badge blue">' + esc(m) + '</span></span><span><strong>' + fmt(d.ttc) + '</strong> <small style="color:#64748b">(' + d.n + ' tx)</small></span></div>';
-            }).join('');
-        }
+        rap.innerHTML = modesCarte.length ? modesCarte.map(m => {
+            const d = B.parMode[m];
+            return '<div class="item-row"><span><span class="badge blue">' + esc(m) + '</span></span><span><strong>' + fmt(d.ttc) + '</strong> <small style="color:#64748b">(' + d.n + ' tx)</small></span></div>';
+        }).join('') : '<div class="empty">Aucun paiement carte ce mois</div>';
 
-        // Top 5 articles (30 derniers jours)
         const seuil = Date.now() - 30 * 24 * 60 * 60 * 1000;
         const arts = {};
         ventes.filter(v => !v.avoir && v.dateTs >= seuil).forEach(v => {
             (v.items || []).forEach(i => {
                 const k = i.name;
                 if (!arts[k]) arts[k] = { qty: 0, ca: 0 };
-                arts[k].qty += i.qty;
-                arts[k].ca += i.price * i.qty;
+                arts[k].qty += i.qty; arts[k].ca += i.price * i.qty;
             });
         });
         const top = Object.keys(arts).sort((x, y) => arts[y].qty - arts[x].qty).slice(0, 5);
         const topEl = document.getElementById('top-articles');
-        if (!top.length) {
-            topEl.innerHTML = '<div class="empty">Aucune vente sur 30 jours</div>';
-        } else {
-            topEl.innerHTML = top.map((k, idx) => '<div><span>' + (idx + 1) + '. ' + esc(k) + '</span><span><strong>' + arts[k].qty + '</strong> <small style="color:#64748b">(' + fmt(arts[k].ca) + ')</small></span></div>').join('');
-        }
+        topEl.innerHTML = top.length ? top.map((k, idx) => '<div class="item-row"><span>' + (idx + 1) + '. ' + esc(k) + '</span><span><strong>' + arts[k].qty + '</strong> <small style="color:#64748b">(' + fmt(arts[k].ca) + ')</small></span></div>').join('') : '<div class="empty">Aucune vente sur 30 jours</div>';
     }
 
     // ---------- Alertes stock ----------
@@ -1104,39 +1011,111 @@
         const ruptures = bas.filter(s => s.qty <= 0);
         const proches = bas.filter(s => s.qty > 0);
         let html = '<div class="alerte-stock">⚠️ <strong>Stock bas</strong><br>';
-        if (ruptures.length) {
-            html += '<div>🚨 <strong>Ruptures :</strong> ' + ruptures.map(s => esc(s.name)).join(', ') + '</div>';
-        }
-        if (proches.length) {
-            html += '<div>🔔 <strong>À surveiller :</strong> ' + proches.map(s => esc(s.name) + ' (x' + s.qty + ')').join(', ') + '</div>';
-        }
+        if (ruptures.length) html += '<div>🚨 <strong>Ruptures :</strong> ' + ruptures.map(s => esc(s.name)).join(', ') + '</div>';
+        if (proches.length) html += '<div>🔔 <strong>À surveiller :</strong> ' + proches.map(s => esc(s.name) + ' (x' + s.qty + ')').join(', ') + '</div>';
         html += '</div>';
         zone.innerHTML = html;
     }
 
-    // ---------- Rendu ----------
-    function render() {
+    // ---------- Rendus modulaires (Optimisation majeure) ----------
+    function renderProfil() {
         document.getElementById('ent-name').value = profil.name || "";
         document.getElementById('ent-siret').value = profil.siret || "";
         document.getElementById('ent-address').value = profil.address || "";
         document.getElementById('ent-email').value = profil.email || "";
         document.getElementById('ent-phone').value = profil.phone || "";
         document.getElementById('ent-mention').value = profil.mention || "";
-
-        // CA du jour
-        const today = new Date().toLocaleDateString('fr-FR');
-        const ca = ventes
-            .filter(v => !v.avoir && (v.dateTs ? new Date(v.dateTs).toLocaleDateString('fr-FR') === today
-                                  : (v.date && v.date.startsWith(today))))
-            .reduce((s, v) => s + v.total, 0);
-        document.getElementById('txt-ca').textContent = fmt(ca);
-
-        renderBackupStatus();
-        renderAlertes();
-        renderBilanApercu();
-        renderTableauDeBord();
-        renderPending();
         document.getElementById('cfg-sumup').value = config.sumupKey || "";
+    }
+
+    function renderPanier() {
+        const lp = document.getElementById('liste-panier');
+        document.getElementById('btn-vider-panier').style.display = panier.length > 0 ? 'block' : 'none';
+        if (panier.length === 0) {
+            lp.innerHTML = '<div class="empty">Panier vide</div>';
+        } else {
+            lp.innerHTML = panier.map((i, idx) => `
+                <div class="item-row">
+                    <span>${esc(i.name)} <small>x${i.qty} — TVA ${i.tva}%</small></span>
+                    <span>${fmt(i.total)} <button class="btn-danger btn-mini" onclick="removePanier(${idx})">✕</button></span>
+                </div>`).join('');
+        }
+        const tp = computeTotaux(panier);
+        document.getElementById('tot-ht').textContent  = fmt(tp.ht);
+        document.getElementById('tot-tva').textContent = fmt(tp.tva);
+        document.getElementById('tot-ttc').textContent = fmt(tp.ttc);
+    }
+
+    function renderStock() {
+        const ls = document.getElementById('liste-stock');
+        const filtered = stocks.filter(p => p.name.toLowerCase().includes(stockSearch.toLowerCase()));
+        if (filtered.length === 0) {
+            ls.innerHTML = '<div class="empty">Aucun article trouvé</div>';
+            return;
+        }
+        ls.innerHTML = filtered.map(p => {
+            const enAlerte = p.qty <= (p.seuil != null ? p.seuil : 3);
+            const margeTxt = p.buyPrice != null ? ' — marge ' + fmt(p.price - p.buyPrice * (1 + p.tva / 100)) : '';
+            return `<div class="item-row">
+                <span>${esc(p.name)} <small>${fmt(p.price)} — TVA ${p.tva}%${margeTxt}</small></span>
+                <span>Stock : <strong style="${enAlerte ? 'color:#dc2626' : ''}">${p.qty}</strong>
+                    <button class="btn-gray btn-mini" onclick="modifierSeuil('${esc(p.id)}')">⚙️</button>
+                    <button class="btn-danger btn-mini" onclick="supprimerStock('${esc(p.id)}')">✕</button>
+                </span>
+            </div>`;
+        }).join('');
+    }
+
+    function renderHistorique() {
+        const lh = document.getElementById('liste-historique');
+        if (ventes.length === 0) {
+            lh.innerHTML = '<div class="empty">Aucune facture</div>';
+            return;
+        }
+        const filtered = ventes.filter(v => 
+            v.id.toLowerCase().includes(historySearch.toLowerCase()) || 
+            v.payment.toLowerCase().includes(historySearch.toLowerCase()) ||
+            (v.items && v.items.some(i => i.name.toLowerCase().includes(historySearch.toLowerCase())))
+        ).reverse();
+
+        const total = filtered.length;
+        const toShow = filtered.slice(0, 50); // Limite à 50 pour les performances Android
+
+        let html = toShow.map(v => {
+            const badge = v.avoir ? '<span class="avoir-tag">AVOIR</span>' : (v.annulee ? '<span class="avoir-tag">ANNULÉE</span>' : '');
+            const btnAvoir = (!v.avoir && !v.annulee) ? `<button class="btn-orange btn-mini" onclick="creerAvoir('${esc(v.id)}')">↩️</button>` : '';
+            return `<div class="item-row ${v.annulee ? 'vente-avoir' : ''}">
+                <span><strong>${esc(v.id)}</strong> ${badge}<br>
+                    <small>${esc(v.date)} — ${esc(v.payment)}<br>
+                    HT ${fmt(v.ht)} / TVA ${fmt(v.tva)}${v.avoir && v.refVente ? '<br>Sur ' + esc(v.refVente) : ''}</small></span>
+                <span style="text-align:right">
+                    <strong>${v.avoir ? '-' : ''}${fmt(v.total)}</strong><br>
+                    <button class="btn-dark btn-mini" onclick="exportPdf('${esc(v.id)}')">📄</button>${btnAvoir}
+                </span>
+            </div>`;
+        }).join('');
+
+        if (total > 50) {
+            html += `<div class="empty" style="margin-top:10px;">... et ${total - 50} autres. Utilisez l'export CSV pour tout voir.</div>`;
+        }
+        lh.innerHTML = html;
+    }
+
+    function renderAll() {
+        renderProfil();
+        renderTableauDeBord();
+        renderBilanApercu();
+        renderStock();
+        renderPanier();
+        renderHistorique();
+        renderAlertes();
+        renderBackupStatus();
+        renderPending();
+        
+        // Mise à jour du CA du jour
+        const today = new Date().toLocaleDateString('fr-FR');
+        const ca = ventes.filter(v => !v.avoir && (v.dateTs ? new Date(v.dateTs).toLocaleDateString('fr-FR') === today : (v.date && v.date.startsWith(today)))).reduce((s, v) => s + v.total, 0);
+        document.getElementById('txt-ca').textContent = fmt(ca);
 
         // Sélecteur produits
         const sel = document.getElementById('sel-product');
@@ -1144,75 +1123,9 @@
         if (stocks.length === 0) {
             sel.innerHTML = '<option value="">— Aucun article en stock —</option>';
         } else {
-            sel.innerHTML = stocks.map(p =>
-                `<option value="${esc(p.id)}">${esc(p.name)} — ${fmt(p.price)} (x${p.qty})</option>`
-            ).join('');
+            sel.innerHTML = stocks.map(p => `<option value="${esc(p.id)}">${esc(p.name)} — ${fmt(p.price)} (x${p.qty})</option>`).join('');
             if (prev && stocks.some(p => p.id === prev)) sel.value = prev;
             if (!isLibre && !document.getElementById('inp-price').value) selectProd();
-        }
-
-        // Panier
-        const lp = document.getElementById('liste-panier');
-        if (panier.length === 0) {
-            lp.innerHTML = '<div class="empty">Panier vide</div>';
-        } else {
-            lp.innerHTML = panier.map((i, idx) => `
-                <div class="item-row">
-                    <span>${esc(i.name)} <small>x${i.qty} — TVA ${i.tva}%</small></span>
-                    <span>${fmt(i.total)}
-                        <button class="btn-danger btn-mini" onclick="removePanier(${idx})">✕</button>
-                    </span>
-                </div>`).join('');
-        }
-        const tp = computeTotaux(panier);
-        document.getElementById('tot-ht').textContent  = fmt(tp.ht);
-        document.getElementById('tot-tva').textContent = fmt(tp.tva);
-        document.getElementById('tot-ttc').textContent = fmt(tp.ttc);
-
-        // Stock
-        const ls = document.getElementById('liste-stock');
-        if (stocks.length === 0) {
-            ls.innerHTML = '<div class="empty">Aucun article</div>';
-        } else {
-            ls.innerHTML = stocks.map(p => {
-                const enAlerte = p.qty <= (p.seuil != null ? p.seuil : 3);
-                const margeTxt = p.buyPrice != null
-                    ? ' — marge ' + fmt(p.price - p.buyPrice * (1 + p.tva / 100))
-                    : '';
-                return `
-                <div class="item-row">
-                    <span>${esc(p.name)} <small>— ${fmt(p.price)} — TVA ${p.tva}%${margeTxt}</small></span>
-                    <span>Stock : <strong style="${enAlerte ? 'color:#dc2626' : ''}">${p.qty}</strong>
-                        <button class="btn-gray btn-mini" onclick="modifierSeuil('${esc(p.id)}')" title="Modifier le seuil d'alerte">⚙️</button>
-                        <button class="btn-danger btn-mini" onclick="supprimerStock('${esc(p.id)}')" title="Supprimer">✕</button>
-                    </span>
-                </div>`;
-            }).join('');
-        }
-
-        // Historique
-        const lh = document.getElementById('liste-historique');
-        if (ventes.length === 0) {
-            lh.innerHTML = '<div class="empty">Aucune facture</div>';
-        } else {
-            lh.innerHTML = ventes.slice().reverse().map(v => {
-                const badge = v.avoir
-                    ? '<span class="avoir-tag">AVOIR</span>'
-                    : (v.annulee ? '<span class="avoir-tag">ANNULÉE</span>' : '');
-                const btnAvoir = (!v.avoir && !v.annulee)
-                    ? `<button class="btn-orange btn-mini" onclick="creerAvoir('${esc(v.id)}')" title="Créer un avoir">↩️</button>`
-                    : '';
-                return `
-                <div class="item-row ${v.annulee ? 'vente-avoir' : ''}">
-                    <span><strong>${esc(v.id)}</strong> ${badge}<br>
-                        <small>${esc(v.date)} — ${esc(v.payment)}<br>
-                        HT ${fmt(v.ht)} / TVA ${fmt(v.tva)}${v.avoir && v.refVente ? '<br>Avoir sur ' + esc(v.refVente) : ''}</small></span>
-                    <span style="text-align:right">
-                        <strong>${v.avoir ? '-' : ''}${fmt(v.total)}</strong><br>
-                        <button class="btn-dark btn-mini" onclick="exportPdf('${esc(v.id)}')">📄</button>${btnAvoir}
-                    </span>
-                </div>`;
-            }).join('');
         }
     }
 
@@ -1220,7 +1133,7 @@
     loadAll();
     document.getElementById('bil-preset').value = 'today';
     appliquerPreset();
-    render();
+    renderAll();
     if (window.AndroidBridge && AndroidBridge.consumeSumupResult) {
         const q = AndroidBridge.consumeSumupResult();
         if (q) traiterRetourSumup(q);
